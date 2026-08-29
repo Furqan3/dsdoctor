@@ -861,10 +861,46 @@ at build time:
 No private, personal or client data is used anywhere in this project.
 
 
+## Coding-agent disclosure
+
+The hackathon requires coding-agent use and requires it to be disclosed. This
+project was built with one.
+
+| | |
+|---|---|
+| **Coding agent** | Claude Code (CLI) |
+| **Model** | Claude Opus 5 |
+| **Sessions** | 2, across 28–29 August 2026 |
+| **Traces** | `agent-traces/claude-code-*.jsonl`, submitted alongside this repository |
+
+**How it was used.** I chose the problem, the framing and the evaluation
+design, and directed the work throughout. The agent wrote the implementation,
+ran the evaluation, and — the part that mattered most — read back its own run
+artifacts and found defects in them. Four of the twelve changelog entries are
+failures it caught in this project's *own* measurement rather than in the tool:
+a baseline that was being scored on a truncation, a fixture that leaked the
+answer through filenames, a reproducibility claim invented instead of
+investigated, and a verifier that was silently reinstating correct judgements.
+
+**Reading the traces.** They are JSONL, one message per line, in Claude Code's
+native session format. Each line has a `type` (`user` / `assistant`), and
+assistant lines carry `message.content` blocks including `tool_use` and their
+`tool_result` responses. The interesting stretches are where a measured result
+was questioned rather than accepted — searching for `subtle_leak`,
+`finish_reason`, `verifier` or `identical` lands in the middle of each.
+
+**Redaction.** The traces are supplied scrubbed: GitHub tokens, API keys,
+private keys and SSH public keys are replaced with `[REDACTED-*]` markers, per
+ground rule 8. Seven redactions were applied, all in the later session, all a
+GitHub personal-access token that was pasted into the terminal while setting up
+this repository. That token has been revoked. Nothing else was altered — the
+transcripts are otherwise complete, including the mistakes.
+
 ## What existed before this hackathon, and what I added
 
 **Existed:** Python, PyTorch, Ultralytics, vLLM, the Qwen3.8-27B checkpoint,
-the OpenAI Python client, COCO, and my own already-running local vLLM server.
+the OpenAI Python client, COCO, my own already-running local vLLM server, and
+Claude Code as the coding agent (see the disclosure above).
 
 **Written for this hackathon:** every line in `src/` and `eval/` — the dataset
 model, all eight detectors, the perceptual-hash leakage check, the tool surface,
