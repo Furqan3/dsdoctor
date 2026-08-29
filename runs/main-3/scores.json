@@ -1,0 +1,2467 @@
+{
+  "generated": "20260828-185955",
+  "corpus": "data/corpus_clean",
+  "model": "qwen3.8-27b",
+  "cases": [
+    "pristine",
+    "subtle_leak",
+    "export_bug",
+    "geometry_mess",
+    "structure_rot",
+    "corrupt_media",
+    "class_mapping_broken",
+    "thin_classes",
+    "duplicate_farm",
+    "only_minor",
+    "leak_and_dupes",
+    "everything"
+  ],
+  "aggregate": {
+    "script": {
+      "cases": 12,
+      "ground_truth_facts": 124,
+      "hits": 124,
+      "misses": 0,
+      "recall": 1.0,
+      "ground_truth_in_scope": null,
+      "recall_in_scope": null,
+      "false_positives": 0,
+      "critical_false_positives": 0,
+      "class_swap_false_positives": 0,
+      "precision": 1.0,
+      "f1": 1.0,
+      "verdict_correct": 0,
+      "verdict_scored": 0,
+      "leads_with_critical": 7,
+      "wall_seconds": 64.6,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0
+    },
+    "baseline": {
+      "cases": 12,
+      "ground_truth_facts": 124,
+      "hits": 14,
+      "misses": 110,
+      "recall": 0.11290322580645161,
+      "ground_truth_in_scope": 19,
+      "recall_in_scope": 0.631578947368421,
+      "false_positives": 261,
+      "critical_false_positives": 139,
+      "class_swap_false_positives": 0,
+      "precision": 0.05090909090909091,
+      "f1": 0.07017543859649122,
+      "verdict_correct": 5,
+      "verdict_scored": 12,
+      "leads_with_critical": 7,
+      "wall_seconds": 756.2,
+      "llm_calls": 12,
+      "tool_calls": 0,
+      "prompt_tokens": 433934,
+      "completion_tokens": 15291
+    },
+    "agent": {
+      "cases": 12,
+      "ground_truth_facts": 124,
+      "hits": 124,
+      "misses": 0,
+      "recall": 1.0,
+      "ground_truth_in_scope": null,
+      "recall_in_scope": null,
+      "false_positives": 0,
+      "critical_false_positives": 0,
+      "class_swap_false_positives": 0,
+      "precision": 1.0,
+      "f1": 1.0,
+      "verdict_correct": 12,
+      "verdict_scored": 12,
+      "leads_with_critical": 7,
+      "wall_seconds": 892.4,
+      "llm_calls": 55,
+      "tool_calls": 177,
+      "prompt_tokens": 215372,
+      "completion_tokens": 33531
+    }
+  },
+  "per_case": [
+    {
+      "case": "pristine",
+      "arm": "script",
+      "n_ground_truth": 0,
+      "n_reported": 0,
+      "hits": 0,
+      "misses": 0,
+      "false_positives": 0,
+      "critical_false_positives": 0,
+      "class_swap_false_positives": 0,
+      "recall": null,
+      "precision": null,
+      "missed_facts": [],
+      "fp_facts": [],
+      "n_in_scope": null,
+      "hits_in_scope": null,
+      "recall_in_scope": null,
+      "wall_seconds": 5.5,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "verdict": "n/a",
+      "expected_verdict": "usable_with_caveats",
+      "verdict_correct": null,
+      "top_finding_type": "",
+      "top_is_critical": null
+    },
+    {
+      "case": "pristine",
+      "arm": "baseline",
+      "n_ground_truth": 0,
+      "n_reported": 55,
+      "hits": 0,
+      "misses": 0,
+      "false_positives": 55,
+      "critical_false_positives": 29,
+      "class_swap_false_positives": 0,
+      "recall": null,
+      "precision": 0.0,
+      "missed_facts": [],
+      "fp_facts": [
+        [
+          "out_of_bounds",
+          "train/000000030828"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000036936"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000074058"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000074256"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000127270"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000156076"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000253742"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000271116"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000277020"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000300039"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000303713"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000345356"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000447342"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000448410"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000461751"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000491213"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000500613"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000511076"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000528399"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000530061"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000563267"
+        ],
+        [
+          "out_of_bounds",
+          "val/000000116208"
+        ],
+        [
+          "out_of_bounds",
+          "val/000000171190"
+        ],
+        [
+          "out_of_bounds",
+          "val/000000172595"
+        ],
+        [
+          "out_of_bounds",
+          "val/000000264535"
+        ],
+        [
+          "out_of_bounds",
+          "val/000000384527"
+        ],
+        [
+          "out_of_bounds",
+          "val/000000565853"
+        ],
+        [
+          "out_of_bounds",
+          "val/000000569030"
+        ],
+        [
+          "out_of_bounds",
+          "val/000000572462"
+        ],
+        [
+          "tiny_box",
+          "train/000000036936"
+        ],
+        [
+          "tiny_box",
+          "train/000000057672"
+        ],
+        [
+          "tiny_box",
+          "train/000000074058"
+        ],
+        [
+          "tiny_box",
+          "train/000000094751"
+        ],
+        [
+          "tiny_box",
+          "train/000000156076"
+        ],
+        [
+          "tiny_box",
+          "train/000000253742"
+        ],
+        [
+          "tiny_box",
+          "train/000000271116"
+        ],
+        [
+          "tiny_box",
+          "train/000000287874"
+        ],
+        [
+          "tiny_box",
+          "train/000000300276"
+        ],
+        [
+          "tiny_box",
+          "train/000000303713"
+        ],
+        [
+          "tiny_box",
+          "train/000000336232"
+        ]
+      ],
+      "n_in_scope": 0,
+      "hits_in_scope": 0,
+      "recall_in_scope": null,
+      "wall_seconds": 65.61,
+      "llm_calls": 1,
+      "tool_calls": 0,
+      "prompt_tokens": 36125,
+      "completion_tokens": 1360,
+      "verdict": "fix_before_training",
+      "expected_verdict": "usable_with_caveats",
+      "verdict_correct": false,
+      "top_finding_type": "out_of_bounds",
+      "top_is_critical": true
+    },
+    {
+      "case": "pristine",
+      "arm": "agent",
+      "n_ground_truth": 0,
+      "n_reported": 0,
+      "hits": 0,
+      "misses": 0,
+      "false_positives": 0,
+      "critical_false_positives": 0,
+      "class_swap_false_positives": 0,
+      "recall": null,
+      "precision": null,
+      "missed_facts": [],
+      "fp_facts": [],
+      "n_in_scope": null,
+      "hits_in_scope": null,
+      "recall_in_scope": null,
+      "wall_seconds": 25.64,
+      "llm_calls": 3,
+      "tool_calls": 10,
+      "prompt_tokens": 6992,
+      "completion_tokens": 771,
+      "verdict": "usable_with_caveats",
+      "expected_verdict": "usable_with_caveats",
+      "verdict_correct": true,
+      "top_finding_type": "",
+      "top_is_critical": null
+    },
+    {
+      "case": "subtle_leak",
+      "arm": "script",
+      "n_ground_truth": 6,
+      "n_reported": 6,
+      "hits": 6,
+      "misses": 0,
+      "false_positives": 0,
+      "critical_false_positives": 0,
+      "class_swap_false_positives": 0,
+      "recall": 1.0,
+      "precision": 1.0,
+      "missed_facts": [],
+      "fp_facts": [],
+      "n_in_scope": null,
+      "hits_in_scope": null,
+      "recall_in_scope": null,
+      "wall_seconds": 5.53,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "verdict": "n/a",
+      "expected_verdict": "blocked",
+      "verdict_correct": null,
+      "top_finding_type": "train_val_leakage",
+      "top_is_critical": true
+    },
+    {
+      "case": "subtle_leak",
+      "arm": "baseline",
+      "n_ground_truth": 6,
+      "n_reported": 10,
+      "hits": 0,
+      "misses": 6,
+      "false_positives": 10,
+      "critical_false_positives": 8,
+      "class_swap_false_positives": 0,
+      "recall": 0.0,
+      "precision": 0.0,
+      "missed_facts": [
+        [
+          "train_val_leakage",
+          "train/000000221754"
+        ],
+        [
+          "train_val_leakage",
+          "train/000000277005"
+        ],
+        [
+          "train_val_leakage",
+          "train/000000336232"
+        ],
+        [
+          "train_val_leakage",
+          "val/218885329401"
+        ],
+        [
+          "train_val_leakage",
+          "val/706346898744"
+        ],
+        [
+          "train_val_leakage",
+          "val/916278631571"
+        ]
+      ],
+      "fp_facts": [
+        [
+          "near_duplicate_image",
+          "train/000000363840"
+        ],
+        [
+          "near_duplicate_image",
+          "val/000000363840"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000180751"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000345356"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000355325"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000461751"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000468332"
+        ],
+        [
+          "out_of_bounds",
+          "val/000000356424"
+        ],
+        [
+          "train_val_leakage",
+          "train/000000363840"
+        ],
+        [
+          "train_val_leakage",
+          "val/000000363840"
+        ]
+      ],
+      "n_in_scope": 0,
+      "hits_in_scope": 0,
+      "recall_in_scope": null,
+      "wall_seconds": 62.68,
+      "llm_calls": 1,
+      "tool_calls": 0,
+      "prompt_tokens": 36172,
+      "completion_tokens": 1262,
+      "verdict": "fix_before_training",
+      "expected_verdict": "blocked",
+      "verdict_correct": false,
+      "top_finding_type": "train_val_leakage",
+      "top_is_critical": true
+    },
+    {
+      "case": "subtle_leak",
+      "arm": "agent",
+      "n_ground_truth": 6,
+      "n_reported": 6,
+      "hits": 6,
+      "misses": 0,
+      "false_positives": 0,
+      "critical_false_positives": 0,
+      "class_swap_false_positives": 0,
+      "recall": 1.0,
+      "precision": 1.0,
+      "missed_facts": [],
+      "fp_facts": [],
+      "n_in_scope": null,
+      "hits_in_scope": null,
+      "recall_in_scope": null,
+      "wall_seconds": 41.45,
+      "llm_calls": 5,
+      "tool_calls": 13,
+      "prompt_tokens": 15858,
+      "completion_tokens": 1396,
+      "verdict": "blocked",
+      "expected_verdict": "blocked",
+      "verdict_correct": true,
+      "top_finding_type": "train_val_leakage",
+      "top_is_critical": true
+    },
+    {
+      "case": "export_bug",
+      "arm": "script",
+      "n_ground_truth": 7,
+      "n_reported": 11,
+      "hits": 7,
+      "misses": 0,
+      "false_positives": 0,
+      "critical_false_positives": 0,
+      "class_swap_false_positives": 0,
+      "recall": 1.0,
+      "precision": 1.0,
+      "missed_facts": [],
+      "fp_facts": [],
+      "n_in_scope": null,
+      "hits_in_scope": null,
+      "recall_in_scope": null,
+      "wall_seconds": 5.36,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "verdict": "n/a",
+      "expected_verdict": "blocked",
+      "verdict_correct": null,
+      "top_finding_type": "denormalised_coords",
+      "top_is_critical": true
+    },
+    {
+      "case": "export_bug",
+      "arm": "baseline",
+      "n_ground_truth": 7,
+      "n_reported": 38,
+      "hits": 3,
+      "misses": 4,
+      "false_positives": 35,
+      "critical_false_positives": 10,
+      "class_swap_false_positives": 0,
+      "recall": 0.42857142857142855,
+      "precision": 0.07894736842105263,
+      "missed_facts": [
+        [
+          "denormalised_coords",
+          "train/000000001000"
+        ],
+        [
+          "denormalised_coords",
+          "train/000000067616"
+        ],
+        [
+          "malformed_label_row",
+          "train/000000242946"
+        ],
+        [
+          "malformed_label_row",
+          "train/000000356531"
+        ]
+      ],
+      "fp_facts": [
+        [
+          "extreme_class_imbalance",
+          "<dataset>"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000156076"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000173004"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000210520"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000271116"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000300039"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000345356"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000461751"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000530061"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000546626"
+        ],
+        [
+          "out_of_bounds",
+          "val/000000116208"
+        ],
+        [
+          "tiny_box",
+          "train/000000036936"
+        ],
+        [
+          "tiny_box",
+          "train/000000074058"
+        ],
+        [
+          "tiny_box",
+          "train/000000094751"
+        ],
+        [
+          "tiny_box",
+          "train/000000156076"
+        ],
+        [
+          "tiny_box",
+          "train/000000166166"
+        ],
+        [
+          "tiny_box",
+          "train/000000193926"
+        ],
+        [
+          "tiny_box",
+          "train/000000271116"
+        ],
+        [
+          "tiny_box",
+          "train/000000277020"
+        ],
+        [
+          "tiny_box",
+          "train/000000287874"
+        ],
+        [
+          "tiny_box",
+          "train/000000300039"
+        ],
+        [
+          "tiny_box",
+          "train/000000300276"
+        ],
+        [
+          "tiny_box",
+          "train/000000448410"
+        ],
+        [
+          "tiny_box",
+          "train/000000461751"
+        ],
+        [
+          "tiny_box",
+          "train/000000491213"
+        ],
+        [
+          "tiny_box",
+          "train/000000511076"
+        ],
+        [
+          "tiny_box",
+          "train/000000528399"
+        ],
+        [
+          "tiny_box",
+          "train/000000563267"
+        ],
+        [
+          "tiny_box",
+          "val/000000116208"
+        ],
+        [
+          "tiny_box",
+          "val/000000171190"
+        ],
+        [
+          "tiny_box",
+          "val/000000289938"
+        ],
+        [
+          "tiny_box",
+          "val/000000384527"
+        ],
+        [
+          "tiny_box",
+          "val/000000387098"
+        ],
+        [
+          "tiny_box",
+          "val/000000565853"
+        ],
+        [
+          "tiny_box",
+          "val/000000569030"
+        ]
+      ],
+      "n_in_scope": 3,
+      "hits_in_scope": 3,
+      "recall_in_scope": 1.0,
+      "wall_seconds": 79.8,
+      "llm_calls": 1,
+      "tool_calls": 0,
+      "prompt_tokens": 36044,
+      "completion_tokens": 2006,
+      "verdict": "blocked",
+      "expected_verdict": "blocked",
+      "verdict_correct": true,
+      "top_finding_type": "denormalised_coords",
+      "top_is_critical": true
+    },
+    {
+      "case": "export_bug",
+      "arm": "agent",
+      "n_ground_truth": 7,
+      "n_reported": 11,
+      "hits": 7,
+      "misses": 0,
+      "false_positives": 0,
+      "critical_false_positives": 0,
+      "class_swap_false_positives": 0,
+      "recall": 1.0,
+      "precision": 1.0,
+      "missed_facts": [],
+      "fp_facts": [],
+      "n_in_scope": null,
+      "hits_in_scope": null,
+      "recall_in_scope": null,
+      "wall_seconds": 201.2,
+      "llm_calls": 7,
+      "tool_calls": 18,
+      "prompt_tokens": 44288,
+      "completion_tokens": 7976,
+      "verdict": "blocked",
+      "expected_verdict": "blocked",
+      "verdict_correct": true,
+      "top_finding_type": "malformed_label_row",
+      "top_is_critical": true
+    },
+    {
+      "case": "geometry_mess",
+      "arm": "script",
+      "n_ground_truth": 12,
+      "n_reported": 12,
+      "hits": 12,
+      "misses": 0,
+      "false_positives": 0,
+      "critical_false_positives": 0,
+      "class_swap_false_positives": 0,
+      "recall": 1.0,
+      "precision": 1.0,
+      "missed_facts": [],
+      "fp_facts": [],
+      "n_in_scope": null,
+      "hits_in_scope": null,
+      "recall_in_scope": null,
+      "wall_seconds": 5.29,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "verdict": "n/a",
+      "expected_verdict": "blocked",
+      "verdict_correct": null,
+      "top_finding_type": "out_of_bounds",
+      "top_is_critical": true
+    },
+    {
+      "case": "geometry_mess",
+      "arm": "baseline",
+      "n_ground_truth": 12,
+      "n_reported": 60,
+      "hits": 1,
+      "misses": 11,
+      "false_positives": 59,
+      "critical_false_positives": 49,
+      "class_swap_false_positives": 0,
+      "recall": 0.08333333333333333,
+      "precision": 0.016666666666666666,
+      "missed_facts": [
+        [
+          "degenerate_box",
+          "train/000000033221"
+        ],
+        [
+          "degenerate_box",
+          "train/000000067616"
+        ],
+        [
+          "degenerate_box",
+          "val/000000340175"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000135561"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000361238"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000437239"
+        ],
+        [
+          "out_of_bounds",
+          "val/000000035279"
+        ],
+        [
+          "out_of_bounds",
+          "val/000000199771"
+        ],
+        [
+          "tiny_box",
+          "train/000000137727"
+        ],
+        [
+          "tiny_box",
+          "train/000000295713"
+        ],
+        [
+          "tiny_box",
+          "train/000000435880"
+        ]
+      ],
+      "fp_facts": [
+        [
+          "degenerate_box",
+          "train/000000156076"
+        ],
+        [
+          "degenerate_box",
+          "train/000000173004"
+        ],
+        [
+          "degenerate_box",
+          "train/000000210520"
+        ],
+        [
+          "degenerate_box",
+          "train/000000345356"
+        ],
+        [
+          "degenerate_box",
+          "train/000000355325"
+        ],
+        [
+          "degenerate_box",
+          "train/000000461751"
+        ],
+        [
+          "degenerate_box",
+          "train/000000530061"
+        ],
+        [
+          "degenerate_box",
+          "train/000000577932"
+        ],
+        [
+          "degenerate_box",
+          "val/000000116208"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000030828"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000036936"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000057672"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000074058"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000074256"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000127270"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000156076"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000166166"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000172648"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000173004"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000253742"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000271116"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000277020"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000300039"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000300276"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000303713"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000336232"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000345356"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000355325"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000447342"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000448410"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000461751"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000491213"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000500613"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000506707"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000511076"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000528399"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000530061"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000546626"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000563267"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000577932"
+        ]
+      ],
+      "n_in_scope": 1,
+      "hits_in_scope": 1,
+      "recall_in_scope": 1.0,
+      "wall_seconds": 70.08,
+      "llm_calls": 1,
+      "tool_calls": 0,
+      "prompt_tokens": 36127,
+      "completion_tokens": 1582,
+      "verdict": "fix_before_training",
+      "expected_verdict": "blocked",
+      "verdict_correct": false,
+      "top_finding_type": "out_of_bounds",
+      "top_is_critical": true
+    },
+    {
+      "case": "geometry_mess",
+      "arm": "agent",
+      "n_ground_truth": 12,
+      "n_reported": 12,
+      "hits": 12,
+      "misses": 0,
+      "false_positives": 0,
+      "critical_false_positives": 0,
+      "class_swap_false_positives": 0,
+      "recall": 1.0,
+      "precision": 1.0,
+      "missed_facts": [],
+      "fp_facts": [],
+      "n_in_scope": null,
+      "hits_in_scope": null,
+      "recall_in_scope": null,
+      "wall_seconds": 52.65,
+      "llm_calls": 4,
+      "tool_calls": 13,
+      "prompt_tokens": 13613,
+      "completion_tokens": 1871,
+      "verdict": "blocked",
+      "expected_verdict": "blocked",
+      "verdict_correct": true,
+      "top_finding_type": "degenerate_box",
+      "top_is_critical": true
+    },
+    {
+      "case": "structure_rot",
+      "arm": "script",
+      "n_ground_truth": 11,
+      "n_reported": 11,
+      "hits": 11,
+      "misses": 0,
+      "false_positives": 0,
+      "critical_false_positives": 0,
+      "class_swap_false_positives": 0,
+      "recall": 1.0,
+      "precision": 1.0,
+      "missed_facts": [],
+      "fp_facts": [],
+      "n_in_scope": null,
+      "hits_in_scope": null,
+      "recall_in_scope": null,
+      "wall_seconds": 5.29,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "verdict": "n/a",
+      "expected_verdict": "fix_before_training",
+      "verdict_correct": null,
+      "top_finding_type": "missing_label_file",
+      "top_is_critical": false
+    },
+    {
+      "case": "structure_rot",
+      "arm": "baseline",
+      "n_ground_truth": 11,
+      "n_reported": 11,
+      "hits": 1,
+      "misses": 10,
+      "false_positives": 10,
+      "critical_false_positives": 9,
+      "class_swap_false_positives": 0,
+      "recall": 0.09090909090909091,
+      "precision": 0.09090909090909091,
+      "missed_facts": [
+        [
+          "empty_label_file",
+          "train/000000242934"
+        ],
+        [
+          "empty_label_file",
+          "train/000000368335"
+        ],
+        [
+          "missing_label_file",
+          "train/000000006040"
+        ],
+        [
+          "missing_label_file",
+          "train/000000226147"
+        ],
+        [
+          "missing_label_file",
+          "train/000000322610"
+        ],
+        [
+          "missing_label_file",
+          "val/000000223182"
+        ],
+        [
+          "missing_label_file",
+          "val/000000549220"
+        ],
+        [
+          "orphan_label_file",
+          "train/398764888884"
+        ],
+        [
+          "orphan_label_file",
+          "train/531232685887"
+        ],
+        [
+          "orphan_label_file",
+          "train/654553082395"
+        ]
+      ],
+      "fp_facts": [
+        [
+          "missing_label_file",
+          "val"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000180751"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000345356"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000355325"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000361238"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000461751"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000541634"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000558854"
+        ],
+        [
+          "out_of_bounds",
+          "val/000000297084"
+        ],
+        [
+          "out_of_bounds",
+          "val/000000448256"
+        ]
+      ],
+      "n_in_scope": 2,
+      "hits_in_scope": 1,
+      "recall_in_scope": 0.5,
+      "wall_seconds": 45.09,
+      "llm_calls": 1,
+      "tool_calls": 0,
+      "prompt_tokens": 36171,
+      "completion_tokens": 507,
+      "verdict": "fix_before_training",
+      "expected_verdict": "fix_before_training",
+      "verdict_correct": true,
+      "top_finding_type": "out_of_bounds",
+      "top_is_critical": true
+    },
+    {
+      "case": "structure_rot",
+      "arm": "agent",
+      "n_ground_truth": 11,
+      "n_reported": 11,
+      "hits": 11,
+      "misses": 0,
+      "false_positives": 0,
+      "critical_false_positives": 0,
+      "class_swap_false_positives": 0,
+      "recall": 1.0,
+      "precision": 1.0,
+      "missed_facts": [],
+      "fp_facts": [],
+      "n_in_scope": null,
+      "hits_in_scope": null,
+      "recall_in_scope": null,
+      "wall_seconds": 62.99,
+      "llm_calls": 4,
+      "tool_calls": 13,
+      "prompt_tokens": 11765,
+      "completion_tokens": 2419,
+      "verdict": "fix_before_training",
+      "expected_verdict": "fix_before_training",
+      "verdict_correct": true,
+      "top_finding_type": "missing_label_file",
+      "top_is_critical": false
+    },
+    {
+      "case": "corrupt_media",
+      "arm": "script",
+      "n_ground_truth": 6,
+      "n_reported": 6,
+      "hits": 6,
+      "misses": 0,
+      "false_positives": 0,
+      "critical_false_positives": 0,
+      "class_swap_false_positives": 0,
+      "recall": 1.0,
+      "precision": 1.0,
+      "missed_facts": [],
+      "fp_facts": [],
+      "n_in_scope": null,
+      "hits_in_scope": null,
+      "recall_in_scope": null,
+      "wall_seconds": 5.3,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "verdict": "n/a",
+      "expected_verdict": "blocked",
+      "verdict_correct": null,
+      "top_finding_type": "corrupt_image",
+      "top_is_critical": true
+    },
+    {
+      "case": "corrupt_media",
+      "arm": "baseline",
+      "n_ground_truth": 6,
+      "n_reported": 28,
+      "hits": 0,
+      "misses": 6,
+      "false_positives": 28,
+      "critical_false_positives": 21,
+      "class_swap_false_positives": 0,
+      "recall": 0.0,
+      "precision": 0.0,
+      "missed_facts": [
+        [
+          "corrupt_image",
+          "train/000000076547"
+        ],
+        [
+          "corrupt_image",
+          "train/000000140987"
+        ],
+        [
+          "corrupt_image",
+          "train/000000271116"
+        ],
+        [
+          "corrupt_image",
+          "val/000000539883"
+        ],
+        [
+          "missing_label_file",
+          "train/000000303713"
+        ],
+        [
+          "missing_label_file",
+          "train/000000577976"
+        ]
+      ],
+      "fp_facts": [
+        [
+          "missing_label_file",
+          "train/000000001000"
+        ],
+        [
+          "missing_label_file",
+          "train/000000001268"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000074256"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000127270"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000172648"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000173004"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000210520"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000271116"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000318114"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000345356"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000355325"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000447342"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000461751"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000500613"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000530061"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000546626"
+        ],
+        [
+          "out_of_bounds",
+          "val/000000018150"
+        ],
+        [
+          "out_of_bounds",
+          "val/000000116208"
+        ],
+        [
+          "out_of_bounds",
+          "val/000000171190"
+        ],
+        [
+          "out_of_bounds",
+          "val/000000172595"
+        ],
+        [
+          "out_of_bounds",
+          "val/000000264535"
+        ],
+        [
+          "out_of_bounds",
+          "val/000000278463"
+        ],
+        [
+          "out_of_bounds",
+          "val/000000384527"
+        ],
+        [
+          "tiny_box",
+          "train/000000036936"
+        ],
+        [
+          "tiny_box",
+          "train/000000094751"
+        ],
+        [
+          "tiny_box",
+          "train/000000287874"
+        ],
+        [
+          "tiny_box",
+          "val/000000289938"
+        ],
+        [
+          "tiny_box",
+          "val/000000384527"
+        ]
+      ],
+      "n_in_scope": 1,
+      "hits_in_scope": 0,
+      "recall_in_scope": 0.0,
+      "wall_seconds": 55.72,
+      "llm_calls": 1,
+      "tool_calls": 0,
+      "prompt_tokens": 36141,
+      "completion_tokens": 965,
+      "verdict": "fix_before_training",
+      "expected_verdict": "blocked",
+      "verdict_correct": false,
+      "top_finding_type": "missing_label_file",
+      "top_is_critical": false
+    },
+    {
+      "case": "corrupt_media",
+      "arm": "agent",
+      "n_ground_truth": 6,
+      "n_reported": 6,
+      "hits": 6,
+      "misses": 0,
+      "false_positives": 0,
+      "critical_false_positives": 0,
+      "class_swap_false_positives": 0,
+      "recall": 1.0,
+      "precision": 1.0,
+      "missed_facts": [],
+      "fp_facts": [],
+      "n_in_scope": null,
+      "hits_in_scope": null,
+      "recall_in_scope": null,
+      "wall_seconds": 61.47,
+      "llm_calls": 5,
+      "tool_calls": 16,
+      "prompt_tokens": 18114,
+      "completion_tokens": 2221,
+      "verdict": "blocked",
+      "expected_verdict": "blocked",
+      "verdict_correct": true,
+      "top_finding_type": "corrupt_image",
+      "top_is_critical": true
+    },
+    {
+      "case": "class_mapping_broken",
+      "arm": "script",
+      "n_ground_truth": 7,
+      "n_reported": 7,
+      "hits": 7,
+      "misses": 0,
+      "false_positives": 0,
+      "critical_false_positives": 0,
+      "class_swap_false_positives": 0,
+      "recall": 1.0,
+      "precision": 1.0,
+      "missed_facts": [],
+      "fp_facts": [],
+      "n_in_scope": null,
+      "hits_in_scope": null,
+      "recall_in_scope": null,
+      "wall_seconds": 5.36,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "verdict": "n/a",
+      "expected_verdict": "blocked",
+      "verdict_correct": null,
+      "top_finding_type": "class_id_out_of_range",
+      "top_is_critical": true
+    },
+    {
+      "case": "class_mapping_broken",
+      "arm": "baseline",
+      "n_ground_truth": 7,
+      "n_reported": 2,
+      "hits": 0,
+      "misses": 7,
+      "false_positives": 2,
+      "critical_false_positives": 1,
+      "class_swap_false_positives": 0,
+      "recall": 0.0,
+      "precision": 0.0,
+      "missed_facts": [
+        [
+          "class_id_out_of_range",
+          "train/000000436883"
+        ],
+        [
+          "class_id_out_of_range",
+          "train/000000492362"
+        ],
+        [
+          "class_id_out_of_range",
+          "val/000000297084"
+        ],
+        [
+          "class_id_out_of_range",
+          "val/000000536947"
+        ],
+        [
+          "malformed_label_row",
+          "train/000000085376"
+        ],
+        [
+          "malformed_label_row",
+          "train/000000336053"
+        ],
+        [
+          "malformed_label_row",
+          "train/000000468332"
+        ]
+      ],
+      "fp_facts": [
+        [
+          "class_id_out_of_range",
+          "<dataset>"
+        ],
+        [
+          "yaml_inconsistency",
+          "<dataset>"
+        ]
+      ],
+      "n_in_scope": 0,
+      "hits_in_scope": 0,
+      "recall_in_scope": null,
+      "wall_seconds": 39.51,
+      "llm_calls": 1,
+      "tool_calls": 0,
+      "prompt_tokens": 36159,
+      "completion_tokens": 266,
+      "verdict": "fix_before_training",
+      "expected_verdict": "blocked",
+      "verdict_correct": false,
+      "top_finding_type": "class_id_out_of_range",
+      "top_is_critical": true
+    },
+    {
+      "case": "class_mapping_broken",
+      "arm": "agent",
+      "n_ground_truth": 7,
+      "n_reported": 7,
+      "hits": 7,
+      "misses": 0,
+      "false_positives": 0,
+      "critical_false_positives": 0,
+      "class_swap_false_positives": 0,
+      "recall": 1.0,
+      "precision": 1.0,
+      "missed_facts": [],
+      "fp_facts": [],
+      "n_in_scope": null,
+      "hits_in_scope": null,
+      "recall_in_scope": null,
+      "wall_seconds": 66.78,
+      "llm_calls": 5,
+      "tool_calls": 19,
+      "prompt_tokens": 21003,
+      "completion_tokens": 2345,
+      "verdict": "blocked",
+      "expected_verdict": "blocked",
+      "verdict_correct": true,
+      "top_finding_type": "class_id_out_of_range",
+      "top_is_critical": true
+    },
+    {
+      "case": "thin_classes",
+      "arm": "script",
+      "n_ground_truth": 2,
+      "n_reported": 2,
+      "hits": 2,
+      "misses": 0,
+      "false_positives": 0,
+      "critical_false_positives": 0,
+      "class_swap_false_positives": 0,
+      "recall": 1.0,
+      "precision": 1.0,
+      "missed_facts": [],
+      "fp_facts": [],
+      "n_in_scope": null,
+      "hits_in_scope": null,
+      "recall_in_scope": null,
+      "wall_seconds": 5.34,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "verdict": "n/a",
+      "expected_verdict": "fix_before_training",
+      "verdict_correct": null,
+      "top_finding_type": "extreme_class_imbalance",
+      "top_is_critical": false
+    },
+    {
+      "case": "thin_classes",
+      "arm": "baseline",
+      "n_ground_truth": 2,
+      "n_reported": 11,
+      "hits": 2,
+      "misses": 0,
+      "false_positives": 9,
+      "critical_false_positives": 9,
+      "class_swap_false_positives": 0,
+      "recall": 1.0,
+      "precision": 0.18181818181818182,
+      "missed_facts": [],
+      "fp_facts": [
+        [
+          "out_of_bounds",
+          "train/000000173004"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000210520"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000271116"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000345356"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000355325"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000461751"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000530061"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000546626"
+        ],
+        [
+          "out_of_bounds",
+          "val/000000116208"
+        ]
+      ],
+      "n_in_scope": 2,
+      "hits_in_scope": 2,
+      "recall_in_scope": 1.0,
+      "wall_seconds": 148.01,
+      "llm_calls": 1,
+      "tool_calls": 0,
+      "prompt_tokens": 36108,
+      "completion_tokens": 4929,
+      "verdict": "fix_before_training",
+      "expected_verdict": "fix_before_training",
+      "verdict_correct": true,
+      "top_finding_type": "yaml_inconsistency",
+      "top_is_critical": false
+    },
+    {
+      "case": "thin_classes",
+      "arm": "agent",
+      "n_ground_truth": 2,
+      "n_reported": 2,
+      "hits": 2,
+      "misses": 0,
+      "false_positives": 0,
+      "critical_false_positives": 0,
+      "class_swap_false_positives": 0,
+      "recall": 1.0,
+      "precision": 1.0,
+      "missed_facts": [],
+      "fp_facts": [],
+      "n_in_scope": null,
+      "hits_in_scope": null,
+      "recall_in_scope": null,
+      "wall_seconds": 52.95,
+      "llm_calls": 4,
+      "tool_calls": 12,
+      "prompt_tokens": 10725,
+      "completion_tokens": 1999,
+      "verdict": "fix_before_training",
+      "expected_verdict": "fix_before_training",
+      "verdict_correct": true,
+      "top_finding_type": "yaml_inconsistency",
+      "top_is_critical": false
+    },
+    {
+      "case": "duplicate_farm",
+      "arm": "script",
+      "n_ground_truth": 12,
+      "n_reported": 12,
+      "hits": 12,
+      "misses": 0,
+      "false_positives": 0,
+      "critical_false_positives": 0,
+      "class_swap_false_positives": 0,
+      "recall": 1.0,
+      "precision": 1.0,
+      "missed_facts": [],
+      "fp_facts": [],
+      "n_in_scope": null,
+      "hits_in_scope": null,
+      "recall_in_scope": null,
+      "wall_seconds": 5.41,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "verdict": "n/a",
+      "expected_verdict": "fix_before_training",
+      "verdict_correct": null,
+      "top_finding_type": "near_duplicate_image",
+      "top_is_critical": false
+    },
+    {
+      "case": "duplicate_farm",
+      "arm": "baseline",
+      "n_ground_truth": 12,
+      "n_reported": 36,
+      "hits": 0,
+      "misses": 12,
+      "false_positives": 36,
+      "critical_false_positives": 0,
+      "class_swap_false_positives": 0,
+      "recall": 0.0,
+      "precision": 0.0,
+      "missed_facts": [
+        [
+          "duplicate_annotation",
+          "train/000000016451"
+        ],
+        [
+          "duplicate_annotation",
+          "train/000000136715"
+        ],
+        [
+          "duplicate_annotation",
+          "train/000000230993"
+        ],
+        [
+          "duplicate_annotation",
+          "train/000000313588"
+        ],
+        [
+          "near_duplicate_image",
+          "train/000000064084"
+        ],
+        [
+          "near_duplicate_image",
+          "train/000000077396"
+        ],
+        [
+          "near_duplicate_image",
+          "train/000000227399"
+        ],
+        [
+          "near_duplicate_image",
+          "train/000000435208"
+        ],
+        [
+          "near_duplicate_image",
+          "train/354608865506"
+        ],
+        [
+          "near_duplicate_image",
+          "train/404490299022"
+        ],
+        [
+          "near_duplicate_image",
+          "train/553349435394"
+        ],
+        [
+          "near_duplicate_image",
+          "train/931528508977"
+        ]
+      ],
+      "fp_facts": [
+        [
+          "near_duplicate_image",
+          "<dataset>"
+        ],
+        [
+          "tiny_box",
+          "train/000000030828"
+        ],
+        [
+          "tiny_box",
+          "train/000000036936"
+        ],
+        [
+          "tiny_box",
+          "train/000000074256"
+        ],
+        [
+          "tiny_box",
+          "train/000000085157"
+        ],
+        [
+          "tiny_box",
+          "train/000000094751"
+        ],
+        [
+          "tiny_box",
+          "train/000000130386"
+        ],
+        [
+          "tiny_box",
+          "train/000000157756"
+        ],
+        [
+          "tiny_box",
+          "train/000000171382"
+        ],
+        [
+          "tiny_box",
+          "train/000000172648"
+        ],
+        [
+          "tiny_box",
+          "train/000000190923"
+        ],
+        [
+          "tiny_box",
+          "train/000000191013"
+        ],
+        [
+          "tiny_box",
+          "train/000000204186"
+        ],
+        [
+          "tiny_box",
+          "train/000000287874"
+        ],
+        [
+          "tiny_box",
+          "train/000000295420"
+        ],
+        [
+          "tiny_box",
+          "train/000000345356"
+        ],
+        [
+          "tiny_box",
+          "train/000000349184"
+        ],
+        [
+          "tiny_box",
+          "train/000000355325"
+        ],
+        [
+          "tiny_box",
+          "train/000000361238"
+        ],
+        [
+          "tiny_box",
+          "train/000000361730"
+        ],
+        [
+          "tiny_box",
+          "train/000000374052"
+        ],
+        [
+          "tiny_box",
+          "train/000000448410"
+        ],
+        [
+          "tiny_box",
+          "train/000000455716"
+        ],
+        [
+          "tiny_box",
+          "train/000000472046"
+        ],
+        [
+          "tiny_box",
+          "train/000000491213"
+        ],
+        [
+          "tiny_box",
+          "train/000000511076"
+        ],
+        [
+          "tiny_box",
+          "train/000000540502"
+        ],
+        [
+          "tiny_box",
+          "train/000000541634"
+        ],
+        [
+          "tiny_box",
+          "train/000000542423"
+        ],
+        [
+          "tiny_box",
+          "train/000000575970"
+        ],
+        [
+          "tiny_box",
+          "train/000000577932"
+        ],
+        [
+          "tiny_box",
+          "train/354608865506"
+        ],
+        [
+          "tiny_box",
+          "val/000000032901"
+        ],
+        [
+          "tiny_box",
+          "val/000000325483"
+        ],
+        [
+          "tiny_box",
+          "val/000000340175"
+        ],
+        [
+          "tiny_box",
+          "val/000000384527"
+        ]
+      ],
+      "n_in_scope": 1,
+      "hits_in_scope": 0,
+      "recall_in_scope": 0.0,
+      "wall_seconds": 53.53,
+      "llm_calls": 1,
+      "tool_calls": 0,
+      "prompt_tokens": 36209,
+      "completion_tokens": 867,
+      "verdict": "fix_before_training",
+      "expected_verdict": "fix_before_training",
+      "verdict_correct": true,
+      "top_finding_type": "near_duplicate_image",
+      "top_is_critical": false
+    },
+    {
+      "case": "duplicate_farm",
+      "arm": "agent",
+      "n_ground_truth": 12,
+      "n_reported": 12,
+      "hits": 12,
+      "misses": 0,
+      "false_positives": 0,
+      "critical_false_positives": 0,
+      "class_swap_false_positives": 0,
+      "recall": 1.0,
+      "precision": 1.0,
+      "missed_facts": [],
+      "fp_facts": [],
+      "n_in_scope": null,
+      "hits_in_scope": null,
+      "recall_in_scope": null,
+      "wall_seconds": 98.76,
+      "llm_calls": 5,
+      "tool_calls": 14,
+      "prompt_tokens": 18078,
+      "completion_tokens": 3906,
+      "verdict": "fix_before_training",
+      "expected_verdict": "fix_before_training",
+      "verdict_correct": true,
+      "top_finding_type": "duplicate_annotation",
+      "top_is_critical": false
+    },
+    {
+      "case": "only_minor",
+      "arm": "script",
+      "n_ground_truth": 7,
+      "n_reported": 7,
+      "hits": 7,
+      "misses": 0,
+      "false_positives": 0,
+      "critical_false_positives": 0,
+      "class_swap_false_positives": 0,
+      "recall": 1.0,
+      "precision": 1.0,
+      "missed_facts": [],
+      "fp_facts": [],
+      "n_in_scope": null,
+      "hits_in_scope": null,
+      "recall_in_scope": null,
+      "wall_seconds": 5.28,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "verdict": "n/a",
+      "expected_verdict": "usable_with_caveats",
+      "verdict_correct": null,
+      "top_finding_type": "empty_label_file",
+      "top_is_critical": false
+    },
+    {
+      "case": "only_minor",
+      "arm": "baseline",
+      "n_ground_truth": 7,
+      "n_reported": 15,
+      "hits": 4,
+      "misses": 3,
+      "false_positives": 11,
+      "critical_false_positives": 0,
+      "class_swap_false_positives": 0,
+      "recall": 0.5714285714285714,
+      "precision": 0.26666666666666666,
+      "missed_facts": [
+        [
+          "empty_label_file",
+          "train/000000376307"
+        ],
+        [
+          "empty_label_file",
+          "train/000000482436"
+        ],
+        [
+          "empty_label_file",
+          "val/000000045229"
+        ]
+      ],
+      "fp_facts": [
+        [
+          "tiny_box",
+          "train/000000094751"
+        ],
+        [
+          "tiny_box",
+          "train/000000130386"
+        ],
+        [
+          "tiny_box",
+          "train/000000157756"
+        ],
+        [
+          "tiny_box",
+          "train/000000204186"
+        ],
+        [
+          "tiny_box",
+          "train/000000287874"
+        ],
+        [
+          "tiny_box",
+          "train/000000361730"
+        ],
+        [
+          "tiny_box",
+          "train/000000447342"
+        ],
+        [
+          "tiny_box",
+          "train/000000540414"
+        ],
+        [
+          "tiny_box",
+          "train/000000575970"
+        ],
+        [
+          "tiny_box",
+          "train/000000580410"
+        ],
+        [
+          "tiny_box",
+          "val/000000416451"
+        ]
+      ],
+      "n_in_scope": 2,
+      "hits_in_scope": 2,
+      "recall_in_scope": 1.0,
+      "wall_seconds": 47.92,
+      "llm_calls": 1,
+      "tool_calls": 0,
+      "prompt_tokens": 36171,
+      "completion_tokens": 627,
+      "verdict": "fix_before_training",
+      "expected_verdict": "usable_with_caveats",
+      "verdict_correct": false,
+      "top_finding_type": "orphan_label_file",
+      "top_is_critical": false
+    },
+    {
+      "case": "only_minor",
+      "arm": "agent",
+      "n_ground_truth": 7,
+      "n_reported": 7,
+      "hits": 7,
+      "misses": 0,
+      "false_positives": 0,
+      "critical_false_positives": 0,
+      "class_swap_false_positives": 0,
+      "recall": 1.0,
+      "precision": 1.0,
+      "missed_facts": [],
+      "fp_facts": [],
+      "n_in_scope": null,
+      "hits_in_scope": null,
+      "recall_in_scope": null,
+      "wall_seconds": 41.24,
+      "llm_calls": 4,
+      "tool_calls": 12,
+      "prompt_tokens": 11146,
+      "completion_tokens": 1448,
+      "verdict": "usable_with_caveats",
+      "expected_verdict": "usable_with_caveats",
+      "verdict_correct": true,
+      "top_finding_type": "empty_label_file",
+      "top_is_critical": false
+    },
+    {
+      "case": "leak_and_dupes",
+      "arm": "script",
+      "n_ground_truth": 15,
+      "n_reported": 15,
+      "hits": 15,
+      "misses": 0,
+      "false_positives": 0,
+      "critical_false_positives": 0,
+      "class_swap_false_positives": 0,
+      "recall": 1.0,
+      "precision": 1.0,
+      "missed_facts": [],
+      "fp_facts": [],
+      "n_in_scope": null,
+      "hits_in_scope": null,
+      "recall_in_scope": null,
+      "wall_seconds": 5.55,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "verdict": "n/a",
+      "expected_verdict": "blocked",
+      "verdict_correct": null,
+      "top_finding_type": "train_val_leakage",
+      "top_is_critical": true
+    },
+    {
+      "case": "leak_and_dupes",
+      "arm": "baseline",
+      "n_ground_truth": 15,
+      "n_reported": 4,
+      "hits": 0,
+      "misses": 15,
+      "false_positives": 4,
+      "critical_false_positives": 2,
+      "class_swap_false_positives": 0,
+      "recall": 0.0,
+      "precision": 0.0,
+      "missed_facts": [
+        [
+          "duplicate_annotation",
+          "train/000000231822"
+        ],
+        [
+          "duplicate_annotation",
+          "train/000000255917"
+        ],
+        [
+          "duplicate_annotation",
+          "train/000000462756"
+        ],
+        [
+          "near_duplicate_image",
+          "train/000000150638"
+        ],
+        [
+          "near_duplicate_image",
+          "train/000000295420"
+        ],
+        [
+          "near_duplicate_image",
+          "train/303522373741"
+        ],
+        [
+          "near_duplicate_image",
+          "train/912024475486"
+        ],
+        [
+          "train_val_leakage",
+          "train/000000056127"
+        ],
+        [
+          "train_val_leakage",
+          "train/000000080932"
+        ],
+        [
+          "train_val_leakage",
+          "train/000000166166"
+        ],
+        [
+          "train_val_leakage",
+          "train/000000476787"
+        ],
+        [
+          "train_val_leakage",
+          "val/214827540762"
+        ],
+        [
+          "train_val_leakage",
+          "val/382780712741"
+        ],
+        [
+          "train_val_leakage",
+          "val/438274936455"
+        ],
+        [
+          "train_val_leakage",
+          "val/889941193761"
+        ]
+      ],
+      "fp_facts": [
+        [
+          "near_duplicate_image",
+          "train/000000303566"
+        ],
+        [
+          "near_duplicate_image",
+          "val/000000303566"
+        ],
+        [
+          "train_val_leakage",
+          "train/000000303566"
+        ],
+        [
+          "train_val_leakage",
+          "val/000000303566"
+        ]
+      ],
+      "n_in_scope": 1,
+      "hits_in_scope": 0,
+      "recall_in_scope": 0.0,
+      "wall_seconds": 40.35,
+      "llm_calls": 1,
+      "tool_calls": 0,
+      "prompt_tokens": 36223,
+      "completion_tokens": 299,
+      "verdict": "fix_before_training",
+      "expected_verdict": "blocked",
+      "verdict_correct": false,
+      "top_finding_type": "train_val_leakage",
+      "top_is_critical": true
+    },
+    {
+      "case": "leak_and_dupes",
+      "arm": "agent",
+      "n_ground_truth": 15,
+      "n_reported": 15,
+      "hits": 15,
+      "misses": 0,
+      "false_positives": 0,
+      "critical_false_positives": 0,
+      "class_swap_false_positives": 0,
+      "recall": 1.0,
+      "precision": 1.0,
+      "missed_facts": [],
+      "fp_facts": [],
+      "n_in_scope": null,
+      "hits_in_scope": null,
+      "recall_in_scope": null,
+      "wall_seconds": 48.06,
+      "llm_calls": 4,
+      "tool_calls": 13,
+      "prompt_tokens": 12602,
+      "completion_tokens": 1698,
+      "verdict": "blocked",
+      "expected_verdict": "blocked",
+      "verdict_correct": true,
+      "top_finding_type": "train_val_leakage",
+      "top_is_critical": true
+    },
+    {
+      "case": "everything",
+      "arm": "script",
+      "n_ground_truth": 39,
+      "n_reported": 41,
+      "hits": 39,
+      "misses": 0,
+      "false_positives": 0,
+      "critical_false_positives": 0,
+      "class_swap_false_positives": 0,
+      "recall": 1.0,
+      "precision": 1.0,
+      "missed_facts": [],
+      "fp_facts": [],
+      "n_in_scope": null,
+      "hits_in_scope": null,
+      "recall_in_scope": null,
+      "wall_seconds": 5.42,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "verdict": "n/a",
+      "expected_verdict": "blocked",
+      "verdict_correct": null,
+      "top_finding_type": "train_val_leakage",
+      "top_is_critical": true
+    },
+    {
+      "case": "everything",
+      "arm": "baseline",
+      "n_ground_truth": 39,
+      "n_reported": 5,
+      "hits": 3,
+      "misses": 36,
+      "false_positives": 2,
+      "critical_false_positives": 1,
+      "class_swap_false_positives": 0,
+      "recall": 0.07692307692307693,
+      "precision": 0.6,
+      "missed_facts": [
+        [
+          "class_id_out_of_range",
+          "train/000000179265"
+        ],
+        [
+          "class_id_out_of_range",
+          "train/000000479030"
+        ],
+        [
+          "corrupt_image",
+          "train/000000336232"
+        ],
+        [
+          "corrupt_image",
+          "train/000000376307"
+        ],
+        [
+          "degenerate_box",
+          "val/000000356248"
+        ],
+        [
+          "degenerate_box",
+          "val/000000539883"
+        ],
+        [
+          "denormalised_coords",
+          "train/000000016249"
+        ],
+        [
+          "denormalised_coords",
+          "train/000000203294"
+        ],
+        [
+          "duplicate_annotation",
+          "train/000000259597"
+        ],
+        [
+          "duplicate_annotation",
+          "train/000000416991"
+        ],
+        [
+          "duplicate_annotation",
+          "train/000000426203"
+        ],
+        [
+          "empty_label_file",
+          "train/000000453841"
+        ],
+        [
+          "malformed_label_row",
+          "train/000000190753"
+        ],
+        [
+          "missing_label_file",
+          "train/000000011197"
+        ],
+        [
+          "missing_label_file",
+          "train/000000035682"
+        ],
+        [
+          "missing_label_file",
+          "train/000000166747"
+        ],
+        [
+          "near_duplicate_image",
+          "train/000000031248"
+        ],
+        [
+          "near_duplicate_image",
+          "train/000000511076"
+        ],
+        [
+          "near_duplicate_image",
+          "train/000000555597"
+        ],
+        [
+          "near_duplicate_image",
+          "train/168567947112"
+        ],
+        [
+          "near_duplicate_image",
+          "train/772403320943"
+        ],
+        [
+          "near_duplicate_image",
+          "train/986903153382"
+        ],
+        [
+          "orphan_label_file",
+          "train/454315123240"
+        ],
+        [
+          "orphan_label_file",
+          "train/716312134591"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000377723"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000455716"
+        ],
+        [
+          "out_of_bounds",
+          "train/000000477227"
+        ],
+        [
+          "tiny_box",
+          "train/000000069224"
+        ],
+        [
+          "tiny_box",
+          "train/000000221754"
+        ],
+        [
+          "tiny_box",
+          "val/000000549220"
+        ],
+        [
+          "train_val_leakage",
+          "train/000000139684"
+        ],
+        [
+          "train_val_leakage",
+          "train/000000287291"
+        ],
+        [
+          "train_val_leakage",
+          "train/000000345466"
+        ],
+        [
+          "train_val_leakage",
+          "val/575886541467"
+        ],
+        [
+          "train_val_leakage",
+          "val/725460290497"
+        ],
+        [
+          "train_val_leakage",
+          "val/963545096650"
+        ]
+      ],
+      "fp_facts": [
+        [
+          "class_id_out_of_range",
+          "<dataset>"
+        ],
+        [
+          "missing_label_file",
+          "train"
+        ]
+      ],
+      "n_in_scope": 6,
+      "hits_in_scope": 3,
+      "recall_in_scope": 0.5,
+      "wall_seconds": 47.94,
+      "llm_calls": 1,
+      "tool_calls": 0,
+      "prompt_tokens": 36284,
+      "completion_tokens": 621,
+      "verdict": "blocked",
+      "expected_verdict": "blocked",
+      "verdict_correct": true,
+      "top_finding_type": "yaml_inconsistency",
+      "top_is_critical": false
+    },
+    {
+      "case": "everything",
+      "arm": "agent",
+      "n_ground_truth": 39,
+      "n_reported": 41,
+      "hits": 39,
+      "misses": 0,
+      "false_positives": 0,
+      "critical_false_positives": 0,
+      "class_swap_false_positives": 0,
+      "recall": 1.0,
+      "precision": 1.0,
+      "missed_facts": [],
+      "fp_facts": [],
+      "n_in_scope": null,
+      "hits_in_scope": null,
+      "recall_in_scope": null,
+      "wall_seconds": 139.19,
+      "llm_calls": 5,
+      "tool_calls": 24,
+      "prompt_tokens": 31188,
+      "completion_tokens": 5481,
+      "verdict": "blocked",
+      "expected_verdict": "blocked",
+      "verdict_correct": true,
+      "top_finding_type": "train_val_leakage",
+      "top_is_critical": true
+    }
+  ]
+}

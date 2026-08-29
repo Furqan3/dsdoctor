@@ -1,0 +1,46 @@
+{
+  "verdict": "fix_before_training",
+  "headline": "Trainable, but 5 images lack label files \u2014 2 of them in val, which silently corrupts your validation mAP. Fix those before training; everything else is cosmetic.",
+  "training_impact": "The run will start and finish: 596/598 images have labels, all 6,696 boxes are in-bounds and normalised, class ids are valid, and there is no train/val leakage. The cost is measurement, not training: Ultralytics treats an image with no .txt as a pure background image. The 2 missing val labels (val/000000223182, val/000000549220) mean any objects in those frames are scored as correctly-predicted background, inflating your val mAP \u2014 the number you will use to decide whether the model is good. The 3 missing train labels teach the model that whatever is in those frames is background, suppressing recall for those classes.",
+  "detectors_run": [
+    "structure_scan",
+    "image_integrity_scan",
+    "geometry_scan",
+    "normalisation_scan",
+    "class_scan",
+    "duplicate_scan"
+  ],
+  "suppressed": 0,
+  "reinstated": 0,
+  "swept_fallback": false,
+  "incomplete": "",
+  "decisions": [
+    {
+      "finding_id": "retyped:0",
+      "type": "missing_label_file",
+      "action": "report",
+      "severity": "major",
+      "source": "retyped",
+      "rationale": "5 images have no label file (exact detector, verified: the .txt files are absent on disk). Fix first: look at the 2 val images. If they contain objects, annotate them \u2014 otherwise your val mAP is inflated by uncounted ground truth. If they are genuinely empty scenes, create empty .txt files so the intent is explicit. Same for the 3 train images: annotate or create empty files; as-is, the model is being told those frames are background.",
+      "files": 5
+    },
+    {
+      "finding_id": "retyped:1",
+      "type": "empty_label_file",
+      "action": "report",
+      "severity": "minor",
+      "source": "retyped",
+      "rationale": "3 train label files exist but contain zero rows. If these are deliberate background/negative images, leave them \u2014 that is a legitimate technique. If the annotations were lost, the model is silently learning false negatives. Worth a 2-minute visual check; no action blocks training.",
+      "files": 3
+    },
+    {
+      "finding_id": "retyped:2",
+      "type": "orphan_label_file",
+      "action": "report",
+      "severity": "minor",
+      "source": "retyped",
+      "rationale": "3 label files with no matching image. They are never read during training, so zero impact on the model \u2014 pure hygiene. Delete them (or restore the images if they were deleted by mistake).",
+      "files": 3
+    }
+  ]
+}

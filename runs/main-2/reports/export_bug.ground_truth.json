@@ -1,0 +1,59 @@
+{
+  "seed": 103,
+  "recipe": {
+    "denormalised_coords": 4,
+    "malformed_label_row": 3
+  },
+  "applied": {
+    "denormalised_coords": 4,
+    "malformed_label_row": 3
+  },
+  "ground_truth": [
+    [
+      "denormalised_coords",
+      "train/000000001000"
+    ],
+    [
+      "denormalised_coords",
+      "train/000000067616"
+    ],
+    [
+      "denormalised_coords",
+      "train/000000355325"
+    ],
+    [
+      "denormalised_coords",
+      "train/000000511076"
+    ],
+    [
+      "malformed_label_row",
+      "train/000000242946"
+    ],
+    [
+      "malformed_label_row",
+      "train/000000356531"
+    ],
+    [
+      "malformed_label_row",
+      "val/000000172595"
+    ]
+  ],
+  "collateral": [
+    [
+      "out_of_bounds",
+      "train/000000001000"
+    ],
+    [
+      "out_of_bounds",
+      "train/000000067616"
+    ],
+    [
+      "out_of_bounds",
+      "train/000000355325"
+    ],
+    [
+      "out_of_bounds",
+      "train/000000511076"
+    ]
+  ]
+}

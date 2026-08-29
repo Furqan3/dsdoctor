@@ -1,0 +1,145 @@
+{
+  "verdict": "blocked",
+  "headline": "Do not train yet: 3 byte-identical train/val pairs make the validation number meaningless, and 2 unparseable label rows, 2 out-of-range class ids, 2 truncated images and 2 zero-area val boxes will crash or NaN the run \u2014 fix these seven before anything else.",
+  "training_impact": "As-is, a standard Ultralytics run fails dataset verification on the out-of-range class ids (13, 15 vs nc=12) and the 6-field label rows (or silently skips them, losing one val annotation); the 2 truncated train images abort the epoch mid-run; the 2 zero-width val boxes put a NaN in the IoU/loss during validation. Even if you force it through, the val mAP is inflated by 3 images the model trained on, and 17 boxes in 2 train files are in raw pixels, teaching the model to collapse boxes toward the top-left corner.",
+  "detectors_run": [
+    "structure_scan",
+    "image_integrity_scan",
+    "geometry_scan",
+    "normalisation_scan",
+    "class_scan",
+    "duplicate_scan"
+  ],
+  "suppressed": 0,
+  "reinstated": 0,
+  "swept_fallback": false,
+  "incomplete": "",
+  "decisions": [
+    {
+      "finding_id": "duplicate_scan:train_val_leakage:0",
+      "type": "train_val_leakage",
+      "action": "report",
+      "severity": "critical",
+      "source": "agent",
+      "rationale": "3 val images are byte-identical (sha1-verified) to train images: val/575886541467, val/725460290497, val/963545096650. This is the answer to 'will the validation number mean anything' \u2014 no. Every metric computed on this val set is optimistic by an unknown margin and cannot be used to compare checkpoints or ship a model. Remove the 3 val images (or re-split) before training; fixing this after training means retraining.",
+      "files": 6
+    },
+    {
+      "finding_id": "structure_scan:malformed_label_row:3",
+      "type": "malformed_label_row",
+      "action": "report",
+      "severity": "critical",
+      "source": "agent",
+      "rationale": "2 rows have 6 fields instead of 5 \u2014 a trailing '0.87' that looks like a confidence score from a non-YOLO export. One is in val (val/000000440475 line 11), so it either crashes dataset scanning or silently drops a val annotation, corrupting the number you'll report. Delete the 6th field in train/000000190753 line 5 and val/000000440475 line 11.",
+      "files": 2
+    },
+    {
+      "finding_id": "class_scan:class_id_out_of_range:0",
+      "type": "class_id_out_of_range",
+      "action": "report",
+      "severity": "critical",
+      "source": "agent",
+      "rationale": "train/000000179265 uses class id 13 and train/000000479030 uses id 15, but data.yaml defines 12 classes (0..11). Ultralytics raises on this during dataset verification \u2014 a hard stop before the first epoch. Decide whether those two boxes are real classes (then add the missing names to data.yaml, which also fixes the nc=15 mismatch) or mislabels (remap or drop the rows).",
+      "files": 2
+    },
+    {
+      "finding_id": "image_integrity_scan:corrupt_image:0",
+      "type": "corrupt_image",
+      "action": "report",
+      "severity": "critical",
+      "source": "agent",
+      "rationale": "train/000000336232 and train/000000376307 are truncated and cannot be decoded (OSError: 40/42 bytes not processed). Most training loops abort the epoch on these, or skip them with a warning easy to miss in a long log. Delete both images and their label files.",
+      "files": 2
+    },
+    {
+      "finding_id": "geometry_scan:degenerate_box:1",
+      "type": "degenerate_box",
+      "action": "report",
+      "severity": "critical",
+      "source": "agent",
+      "rationale": "2 boxes with w=0 (val/000000356248 line 11, val/000000539883 line 3). Zero-area boxes produce NaN in most IoU implementations, which propagates into the loss and ends the run \u2014 and both are in val, so they hit exactly the pass that produces your decision metric. Drop both rows.",
+      "files": 2
+    },
+    {
+      "finding_id": "normalisation_scan:denormalised_coords:0",
+      "type": "denormalised_coords",
+      "action": "report",
+      "severity": "critical",
+      "source": "agent",
+      "rationale": "train/000000016249 (11/11 rows) and train/000000203294 (6/6 rows) hold raw pixel coordinates \u2014 values bounded by image dimensions (max x=484 on a 500px image), not by 1.0. An export that skipped the divide-by-width/height step. Training on these 17 boxes teaches the model to collapse boxes to the top-left corner. Normalise by image size; this also resolves 17 of the 20 out-of-bounds boxes.",
+      "files": 2
+    },
+    {
+      "finding_id": "geometry_scan:out_of_bounds:0",
+      "type": "out_of_bounds",
+      "action": "report",
+      "severity": "critical",
+      "source": "agent",
+      "rationale": "20 boxes outside [0,1] in 5 train files. 17 of them are the two denormalised files above (fixed by normalising); the remaining 3 in train/000000377723, train/000000455716, train/000000477227 need individual review \u2014 clip if the overflow is a rounding artifact, drop if the box is garbage. Where loaders clip silently, the model trains against a target the annotator never drew.",
+      "files": 5
+    },
+    {
+      "finding_id": "structure_scan:yaml_inconsistency:4",
+      "type": "yaml_inconsistency",
+      "action": "report",
+      "severity": "major",
+      "source": "agent",
+      "rationale": "data.yaml declares nc=15 but lists only 12 names, while labels on disk use ids up to 15. The yaml is wrong in both directions and is the root of the class_id_out_of_range crash. Reconcile it with the actual label ids (add the missing names or remap the 2 stray boxes) in the same pass as the class-id fix.",
+      "files": 0
+    },
+    {
+      "finding_id": "structure_scan:missing_label_file:0",
+      "type": "missing_label_file",
+      "action": "report",
+      "severity": "major",
+      "source": "agent",
+      "rationale": "3 train images have no label file (train/000000011197, train/00000035682, train/000000166747). Ultralytics treats them as pure background \u2014 if they actually contain objects, the model is being explicitly taught those objects are background, suppressing recall. Check the images: annotate them or create empty .txt files if they're deliberate backgrounds.",
+      "files": 3
+    },
+    {
+      "finding_id": "geometry_scan:duplicate_annotation:3",
+      "type": "duplicate_annotation",
+      "action": "report",
+      "severity": "major",
+      "source": "agent",
+      "rationale": "3 boxes are listed twice in the same file (train/000000259597, train/000000416991, train/000000426203). Duplicates double-count in the loss and break the one-target-per-object assumption used by NMS-free matchers. Dedupe the repeated rows.",
+      "files": 3
+    },
+    {
+      "finding_id": "geometry_scan:tiny_box:2",
+      "type": "tiny_box",
+      "action": "report",
+      "severity": "major",
+      "source": "agent",
+      "rationale": "3 boxes at 0.0005 x 0.0005 (area 2.5e-7) in train/000000069224, train/000000221754, val/000000549220. They are dropped during letterboxing, so they contribute nothing to training while inflating the apparent annotation count \u2014 one is in val, slightly skewing per-class coverage. Drop them.",
+      "files": 3
+    },
+    {
+      "finding_id": "duplicate_scan:near_duplicate_image:1",
+      "type": "near_duplicate_image",
+      "action": "report",
+      "severity": "major",
+      "source": "agent",
+      "rationale": "3 near-identical pairs inside train (perceptual distance 0/64): train/000000031248~986903153382, train/000000511076~772403320943, train/000000555597~168567947112. They over-weight whatever scene they contain and inflate the dataset size you report. Dedupe one of each pair.",
+      "files": 6
+    },
+    {
+      "finding_id": "structure_scan:orphan_label_file:1",
+      "type": "orphan_label_file",
+      "action": "report",
+      "severity": "minor",
+      "source": "agent",
+      "rationale": "2 label files with no image (train/454315123240, train/716312134591). Never read during training \u2014 dead weight from deleted/renamed images. Delete them.",
+      "files": 2
+    },
+    {
+      "finding_id": "structure_scan:empty_label_file:2",
+      "type": "empty_label_file",
+      "action": "report",
+      "severity": "minor",
+      "source": "agent",
+      "rationale": "2 empty label files (train/000000127270, train/000000453841). Intentional background images are legitimate, but an unintended empty file is a silently dropped annotation. Confirm against the images; no action needed if deliberate.",
+      "files": 2
+    }
+  ]
+}

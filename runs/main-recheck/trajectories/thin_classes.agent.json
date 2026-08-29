@@ -1,0 +1,932 @@
+{
+  "agent": "auditor",
+  "model": "qwen3.8-27b",
+  "llm_calls": 4,
+  "tool_calls": 12,
+  "prompt_tokens": 10725,
+  "completion_tokens": 1999,
+  "wall_seconds": 52.9,
+  "steps": [
+    {
+      "kind": "llm",
+      "name": "qwen3.8-27b",
+      "request": {
+        "messages": [
+          {
+            "role": "system",
+            "content": "You audit object-detection training datasets in YOLO format.\n\nYour user is an ML engineer who has just inherited a labelled dataset and has to decide today whether to train on it. They are not asking for a list of everything technically imperfect. They need three answers: will this train at all, will the validation number mean anything, and what has to be fixed first.\n\nHow to work:\n\n1. Call dataset_summary first, to see the scale, the splits and the classes.\n\n2. Call list_detectors, then run the ones that matter. Each detector reports a `reliability`. Detectors marked exact read the files directly and use no language model, so what they say about the bytes on disk is fact, not opinion; run all of them, they are cheap. Detectors marked experimental are known to produce false positives - treat anything they return as a hypothesis you have to check, never as a finding on its own.\n\n3. Detector output is not a report. What needs your judgement is:\n\n   Ranking. A dataset with a train/val leak and a handful of oversized boxes has one urgent problem and one cosmetic one. Lead with what actually blocks the engineer, and say plainly what it costs them.\n\n   Reading the evidence. Before you ra\n... [1568 more chars]"
+          },
+          {
+            "role": "user",
+            "content": "Audit the dataset at /home/unk/projects/micro1-hackathon/dataset-doctor/data/cases/thin_classes. Decide whether it is safe to train on, and tell me what to fix first."
+          }
+        ],
+        "tool_choice": "auto",
+        "n_tools": 7
+      },
+      "response": {
+        "content": "",
+        "tool_calls": [
+          {
+            "id": "chatcmpl-tool-ae7f4dedb6b8b0be",
+            "type": "function",
+            "function": {
+              "name": "dataset_summary",
+              "arguments": "{}"
+            }
+          },
+          {
+            "id": "chatcmpl-tool-9c886e9446ae8515",
+            "type": "function",
+            "function": {
+              "name": "list_detectors",
+              "arguments": "{}"
+            }
+          }
+        ],
+        "finish_reason": "tool_calls"
+      },
+      "reasoning": "Let's start by checking the dataset summary and the list of detectors.\n",
+      "seconds": 2.37,
+      "prompt_tokens": 1670,
+      "completion_tokens": 47
+    },
+    {
+      "kind": "tool",
+      "name": "dataset_summary",
+      "request": {},
+      "response": {
+        "root": "/home/unk/projects/micro1-hackathon/dataset-doctor/data/cases/thin_classes",
+        "num_classes": 12,
+        "class_names": [
+          "person",
+          "chair",
+          "car",
+          "dining table",
+          "cup",
+          "bottle",
+          "bowl",
+          "handbag",
+          "truck",
+          "bench",
+          "book",
+          "backpack"
+        ],
+        "splits": {
+          "train": {
+            "images": 468,
+            "label_files": 468,
+            "boxes": 4691
+          },
+          "val": {
+            "images": 132,
+            "label_files": 132,
+            "boxes": 1742
+          }
+        },
+        "total_boxes": 6433,
+        "data_yaml_problem": "data.yaml declares nc=15 but lists 12 names"
+      },
+      "reasoning": "",
+      "seconds": 0.0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0
+    },
+    {
+      "kind": "tool",
+      "name": "list_detectors",
+      "request": {},
+      "response": {
+        "detectors": [
+          {
+            "name": "structure_scan",
+            "description": "Pair images with label files and validate data.yaml. Detects missing_label_file, orphan_label_file, empty_label_file, malformed_label_row and yaml_inconsistency.",
+            "detects": [
+              "missing_label_file",
+              "orphan_label_file",
+              "empty_label_file",
+              "malformed_label_row",
+              "yaml_inconsistency"
+            ],
+            "cost": "fast",
+            "reliability": "exact - reads the files directly",
+            "already_run": false
+          },
+          {
+            "name": "image_integrity_scan",
+            "description": "Open every image header to find files that cannot be decoded. Detects corrupt_image. Reads pixels, so slower than structure_scan.",
+            "detects": [
+              "corrupt_image"
+            ],
+            "cost": "medium",
+            "reliability": "exact - reads the files directly",
+            "already_run": false
+          },
+          {
+            "name": "geometry_scan",
+            "description": "Validate every box's normalised coordinates. Detects out_of_bounds, degenerate_box, tiny_box and duplicate_annotation.",
+            "detects": [
+              "out_of_bounds",
+              "degenerate_box",
+              "tiny_box",
+              "duplicate_annotation"
+            ],
+            "cost": "fast",
+            "reliability": "exact - reads the files directly",
+            "already_run": false
+          },
+          {
+            "name": "normalisation_scan",
+            "description": "Check whether coordinates were ever normalised, by comparing label value ranges against the image dimensions. Detects denormalised_coords. Reads image headers.",
+            "detects": [
+              "denormalised_coords"
+            ],
+            "cost": "medium",
+            "reliability": "exact - reads the files directly",
+            "already_run": false
+          },
+          {
+            "name": "class_scan",
+            "description": "Check class ids against data.yaml and measure the per-class, per-split instance distribution. Detects class_id_out_of_range and extreme_class_imbalance.",
+            "detects": [
+              "class_id_out_of_range",
+              "extreme_class_imbalance"
+            ],
+            "cost": "fast",
+            "reliability": "exact - reads the files directly",
+            "already_run": false
+          },
+          {
+            "name": "class_distribution",
+            "description": "Report the full per-class instance count for every split. Purely informational - emits no findings, used to reason about balance.",
+            "detects": [],
+            "cost": "fast",
+            "reliability": "exact - reads the files directly",
+            "already_run": false
+          },
+          {
+            "name": "duplicate_scan",
+            "description": "Perceptually hash every image to find near-identical pairs inside a split and identical content shared across splits. Detects train_val_leakage and near_duplicate_image. Reads pixels.",
+            "detects": [
+              "train_val_leakage",
+              "near_duplicate_image"
+            ],
+            "cost": "medium",
+            "reliability": "exact - reads the files directly",
+            "already_run": false
+          }
+        ],
+        "note": "Every detector is deterministic and reads the files directly. None of them use a language model."
+      },
+      "reasoning": "",
+      "seconds": 0.0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0
+    },
+    {
+      "kind": "llm",
+      "name": "qwen3.8-27b",
+      "request": {
+        "messages": [
+          {
+            "role": "system",
+            "content": "You audit object-detection training datasets in YOLO format.\n\nYour user is an ML engineer who has just inherited a labelled dataset and has to decide today whether to train on it. They are not asking for a list of everything technically imperfect. They need three answers: will this train at all, will the validation number mean anything, and what has to be fixed first.\n\nHow to work:\n\n1. Call dataset_summary first, to see the scale, the splits and the classes.\n\n2. Call list_detectors, then run the ones that matter. Each detector reports a `reliability`. Detectors marked exact read the files directly and use no language model, so what they say about the bytes on disk is fact, not opinion; run all of them, they are cheap. Detectors marked experimental are known to produce false positives - treat anything they return as a hypothesis you have to check, never as a finding on its own.\n\n3. Detector output is not a report. What needs your judgement is:\n\n   Ranking. A dataset with a train/val leak and a handful of oversized boxes has one urgent problem and one cosmetic one. Lead with what actually blocks the engineer, and say plainly what it costs them.\n\n   Reading the evidence. Before you ra\n... [1568 more chars]"
+          },
+          {
+            "role": "user",
+            "content": "Audit the dataset at /home/unk/projects/micro1-hackathon/dataset-doctor/data/cases/thin_classes. Decide whether it is safe to train on, and tell me what to fix first."
+          },
+          {
+            "role": "assistant",
+            "tool_calls": [
+              {
+                "id": "chatcmpl-tool-ae7f4dedb6b8b0be",
+                "type": "function",
+                "function": {
+                  "name": "dataset_summary",
+                  "arguments": "{}"
+                }
+              },
+              {
+                "id": "chatcmpl-tool-9c886e9446ae8515",
+                "type": "function",
+                "function": {
+                  "name": "list_detectors",
+                  "arguments": "{}"
+                }
+              }
+            ],
+            "content": ""
+          },
+          {
+            "role": "tool",
+            "tool_call_id": "chatcmpl-tool-ae7f4dedb6b8b0be",
+            "content": "{\"root\":\"/home/unk/projects/micro1-hackathon/dataset-doctor/data/cases/thin_classes\",\"num_classes\":12,\"class_names\":[\"person\",\"chair\",\"car\",\"dining table\",\"cup\",\"bottle\",\"bowl\",\"handbag\",\"truck\",\"bench\",\"book\",\"backpack\"],\"splits\":{\"train\":{\"images\":468,\"label_files\":468,\"boxes\":4691},\"val\":{\"images\":132,\"label_files\":132,\"boxes\":1742}},\"total_boxes\":6433,\"data_yaml_problem\":\"data.yaml declares nc=15 but lists 12 names\"}"
+          },
+          {
+            "role": "tool",
+            "tool_call_id": "chatcmpl-tool-9c886e9446ae8515",
+            "content": "{\"detectors\":[{\"name\":\"structure_scan\",\"description\":\"Pair images with label files and validate data.yaml. Detects missing_label_file, orphan_label_file, empty_label_file, malformed_label_row and yaml_inconsistency.\",\"detects\":[\"missing_label_file\",\"orphan_label_file\",\"empty_label_file\",\"malformed_label_row\",\"yaml_inconsistency\"],\"cost\":\"fast\",\"reliability\":\"exact - reads the files directly\",\"already_run\":false},{\"name\":\"image_integrity_scan\",\"description\":\"Open every image header to find files that cannot be decoded. Detects corrupt_image. Reads pixels, so slower than structure_scan.\",\"detects\":[\"corrupt_image\"],\"cost\":\"medium\",\"reliability\":\"exact - reads the files directly\",\"already_run\":false},{\"name\":\"geometry_scan\",\"description\":\"Validate every box's normalised coordinates. Detects out_of_bounds, degenerate_box, tiny_box and duplicate_annotation.\",\"detects\":[\"out_of_bounds\",\"degenerate_box\",\"tiny_box\",\"duplicate_annotation\"],\"cost\":\"fast\",\"reliability\":\"exact - reads the files directly\",\"already_run\":false},{\"name\":\"normalisation_scan\",\"description\":\"Check whether coordinates were ever normalised, by comparing label value ranges against the image dimensions. Detects denormali\n... [1235 more chars]"
+          }
+        ],
+        "tool_choice": "auto",
+        "n_tools": 7
+      },
+      "response": {
+        "content": "",
+        "tool_calls": [
+          {
+            "id": "chatcmpl-tool-a44076b80beb06b8",
+            "type": "function",
+            "function": {
+              "name": "run_detector",
+              "arguments": "{\"name\": \"structure_scan\"}"
+            }
+          },
+          {
+            "id": "chatcmpl-tool-bc00158ffb0c3596",
+            "type": "function",
+            "function": {
+              "name": "run_detector",
+              "arguments": "{\"name\": \"image_integrity_scan\"}"
+            }
+          },
+          {
+            "id": "chatcmpl-tool-96532e2f9e336d73",
+            "type": "function",
+            "function": {
+              "name": "run_detector",
+              "arguments": "{\"name\": \"geometry_scan\"}"
+            }
+          },
+          {
+            "id": "chatcmpl-tool-ae30228d0cad5240",
+            "type": "function",
+            "function": {
+              "name": "run_detector",
+              "arguments": "{\"name\": \"normalisation_scan\"}"
+            }
+          },
+          {
+            "id": "chatcmpl-tool-bb5fcbb2c7f8ffe3",
+            "type": "function",
+            "function": {
+              "name": "run_detector",
+              "arguments": "{\"name\": \"class_scan\"}"
+            }
+          },
+          {
+            "id": "chatcmpl-tool-a697ba0f54a25da8",
+            "type": "function",
+            "function": {
+              "name": "run_detector",
+              "arguments": "{\"name\": \"duplicate_scan\"}"
+            }
+          },
+          {
+            "id": "chatcmpl-tool-98436e80ed4ffc40",
+            "type": "function",
+            "function": {
+              "name": "class_distribution",
+              "arguments": "{}"
+            }
+          }
+        ],
+        "finish_reason": "tool_calls"
+      },
+      "reasoning": "All detectors are accurate. Run them all. The dataset is small (600 images, 6433 boxes). Let's run all the detectors.\n",
+      "seconds": 5.39,
+      "prompt_tokens": 2372,
+      "completion_tokens": 216
+    },
+    {
+      "kind": "tool",
+      "name": "run_detector",
+      "request": {
+        "name": "structure_scan"
+      },
+      "response": {
+        "detector": "structure_scan",
+        "findings_found": 1,
+        "findings": [
+          {
+            "finding_id": "structure_scan:yaml_inconsistency:0",
+            "type": "yaml_inconsistency",
+            "detector_severity": "major",
+            "title": "data.yaml is missing or inconsistent",
+            "affected_files": 0,
+            "example_files": [],
+            "example_evidence": [
+              "data.yaml declares nc=15 but lists 12 names"
+            ]
+          }
+        ],
+        "hint": "Use inspect_finding to see the full evidence before deciding whether a finding is real."
+      },
+      "reasoning": "",
+      "seconds": 0.0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0
+    },
+    {
+      "kind": "tool",
+      "name": "run_detector",
+      "request": {
+        "name": "image_integrity_scan"
+      },
+      "response": {
+        "detector": "image_integrity_scan",
+        "findings_found": 0,
+        "findings": [],
+        "hint": "Use inspect_finding to see the full evidence before deciding whether a finding is real."
+      },
+      "reasoning": "",
+      "seconds": 0.0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0
+    },
+    {
+      "kind": "tool",
+      "name": "run_detector",
+      "request": {
+        "name": "geometry_scan"
+      },
+      "response": {
+        "detector": "geometry_scan",
+        "findings_found": 0,
+        "findings": [],
+        "hint": "Use inspect_finding to see the full evidence before deciding whether a finding is real."
+      },
+      "reasoning": "",
+      "seconds": 0.0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0
+    },
+    {
+      "kind": "tool",
+      "name": "run_detector",
+      "request": {
+        "name": "normalisation_scan"
+      },
+      "response": {
+        "detector": "normalisation_scan",
+        "findings_found": 0,
+        "findings": [],
+        "hint": "Use inspect_finding to see the full evidence before deciding whether a finding is real."
+      },
+      "reasoning": "",
+      "seconds": 0.0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0
+    },
+    {
+      "kind": "tool",
+      "name": "run_detector",
+      "request": {
+        "name": "class_scan"
+      },
+      "response": {
+        "detector": "class_scan",
+        "findings_found": 1,
+        "findings": [
+          {
+            "finding_id": "class_scan:extreme_class_imbalance:0",
+            "type": "extreme_class_imbalance",
+            "detector_severity": "major",
+            "title": "1 class(es) have too few instances to train or validate",
+            "affected_files": 0,
+            "example_files": [],
+            "example_evidence": [
+              "'bowl' (id 6): only 2 instances in train; 992x rarer than the most common class; only 0 instances in val, so its per-class mAP is not meaningful"
+            ]
+          }
+        ],
+        "hint": "Use inspect_finding to see the full evidence before deciding whether a finding is real."
+      },
+      "reasoning": "",
+      "seconds": 0.0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0
+    },
+    {
+      "kind": "tool",
+      "name": "run_detector",
+      "request": {
+        "name": "duplicate_scan"
+      },
+      "response": {
+        "detector": "duplicate_scan",
+        "findings_found": 0,
+        "findings": [],
+        "hint": "Use inspect_finding to see the full evidence before deciding whether a finding is real."
+      },
+      "reasoning": "",
+      "seconds": 0.0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0
+    },
+    {
+      "kind": "tool",
+      "name": "class_distribution",
+      "request": {},
+      "response": {
+        "instances_per_class_per_split": {
+          "train": {
+            "person": 1983,
+            "chair": 411,
+            "car": 577,
+            "dining table": 242,
+            "cup": 355,
+            "bottle": 192,
+            "bowl": 2,
+            "handbag": 274,
+            "truck": 201,
+            "bench": 185,
+            "book": 73,
+            "backpack": 196
+          },
+          "val": {
+            "person": 463,
+            "chair": 321,
+            "car": 47,
+            "dining table": 139,
+            "cup": 180,
+            "bottle": 263,
+            "bowl": 0,
+            "handbag": 25,
+            "truck": 15,
+            "bench": 25,
+            "book": 228,
+            "backpack": 36
+          }
+        }
+      },
+      "reasoning": "",
+      "seconds": 0.0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0
+    },
+    {
+      "kind": "llm",
+      "name": "qwen3.8-27b",
+      "request": {
+        "messages": [
+          {
+            "role": "system",
+            "content": "You audit object-detection training datasets in YOLO format.\n\nYour user is an ML engineer who has just inherited a labelled dataset and has to decide today whether to train on it. They are not asking for a list of everything technically imperfect. They need three answers: will this train at all, will the validation number mean anything, and what has to be fixed first.\n\nHow to work:\n\n1. Call dataset_summary first, to see the scale, the splits and the classes.\n\n2. Call list_detectors, then run the ones that matter. Each detector reports a `reliability`. Detectors marked exact read the files directly and use no language model, so what they say about the bytes on disk is fact, not opinion; run all of them, they are cheap. Detectors marked experimental are known to produce false positives - treat anything they return as a hypothesis you have to check, never as a finding on its own.\n\n3. Detector output is not a report. What needs your judgement is:\n\n   Ranking. A dataset with a train/val leak and a handful of oversized boxes has one urgent problem and one cosmetic one. Lead with what actually blocks the engineer, and say plainly what it costs them.\n\n   Reading the evidence. Before you ra\n... [1568 more chars]"
+          },
+          {
+            "role": "user",
+            "content": "Audit the dataset at /home/unk/projects/micro1-hackathon/dataset-doctor/data/cases/thin_classes. Decide whether it is safe to train on, and tell me what to fix first."
+          },
+          {
+            "role": "assistant",
+            "tool_calls": [
+              {
+                "id": "chatcmpl-tool-ae7f4dedb6b8b0be",
+                "type": "function",
+                "function": {
+                  "name": "dataset_summary",
+                  "arguments": "{}"
+                }
+              },
+              {
+                "id": "chatcmpl-tool-9c886e9446ae8515",
+                "type": "function",
+                "function": {
+                  "name": "list_detectors",
+                  "arguments": "{}"
+                }
+              }
+            ],
+            "content": ""
+          },
+          {
+            "role": "tool",
+            "tool_call_id": "chatcmpl-tool-ae7f4dedb6b8b0be",
+            "content": "{\"root\":\"/home/unk/projects/micro1-hackathon/dataset-doctor/data/cases/thin_classes\",\"num_classes\":12,\"class_names\":[\"person\",\"chair\",\"car\",\"dining table\",\"cup\",\"bottle\",\"bowl\",\"handbag\",\"truck\",\"bench\",\"book\",\"backpack\"],\"splits\":{\"train\":{\"images\":468,\"label_files\":468,\"boxes\":4691},\"val\":{\"images\":132,\"label_files\":132,\"boxes\":1742}},\"total_boxes\":6433,\"data_yaml_problem\":\"data.yaml declares nc=15 but lists 12 names\"}"
+          },
+          {
+            "role": "tool",
+            "tool_call_id": "chatcmpl-tool-9c886e9446ae8515",
+            "content": "{\"detectors\":[{\"name\":\"structure_scan\",\"description\":\"Pair images with label files and validate data.yaml. Detects missing_label_file, orphan_label_file, empty_label_file, malformed_label_row and yaml_inconsistency.\",\"detects\":[\"missing_label_file\",\"orphan_label_file\",\"empty_label_file\",\"malformed_label_row\",\"yaml_inconsistency\"],\"cost\":\"fast\",\"reliability\":\"exact - reads the files directly\",\"already_run\":false},{\"name\":\"image_integrity_scan\",\"description\":\"Open every image header to find files that cannot be decoded. Detects corrupt_image. Reads pixels, so slower than structure_scan.\",\"detects\":[\"corrupt_image\"],\"cost\":\"medium\",\"reliability\":\"exact - reads the files directly\",\"already_run\":false},{\"name\":\"geometry_scan\",\"description\":\"Validate every box's normalised coordinates. Detects out_of_bounds, degenerate_box, tiny_box and duplicate_annotation.\",\"detects\":[\"out_of_bounds\",\"degenerate_box\",\"tiny_box\",\"duplicate_annotation\"],\"cost\":\"fast\",\"reliability\":\"exact - reads the files directly\",\"already_run\":false},{\"name\":\"normalisation_scan\",\"description\":\"Check whether coordinates were ever normalised, by comparing label value ranges against the image dimensions. Detects denormali\n... [1235 more chars]"
+          },
+          {
+            "role": "assistant",
+            "tool_calls": [
+              {
+                "id": "chatcmpl-tool-a44076b80beb06b8",
+                "type": "function",
+                "function": {
+                  "name": "run_detector",
+                  "arguments": "{\"name\": \"structure_scan\"}"
+                }
+              },
+              {
+                "id": "chatcmpl-tool-bc00158ffb0c3596",
+                "type": "function",
+                "function": {
+                  "name": "run_detector",
+                  "arguments": "{\"name\": \"image_integrity_scan\"}"
+                }
+              },
+              {
+                "id": "chatcmpl-tool-96532e2f9e336d73",
+                "type": "function",
+                "function": {
+                  "name": "run_detector",
+                  "arguments": "{\"name\": \"geometry_scan\"}"
+                }
+              },
+              {
+                "id": "chatcmpl-tool-ae30228d0cad5240",
+                "type": "function",
+                "function": {
+                  "name": "run_detector",
+                  "arguments": "{\"name\": \"normalisation_scan\"}"
+                }
+              },
+              {
+                "id": "chatcmpl-tool-bb5fcbb2c7f8ffe3",
+                "type": "function",
+                "function": {
+                  "name": "run_detector",
+                  "arguments": "{\"name\": \"class_scan\"}"
+                }
+              },
+              {
+                "id": "chatcmpl-tool-a697ba0f54a25da8",
+                "type": "function",
+                "function": {
+                  "name": "run_detector",
+                  "arguments": "{\"name\": \"duplicate_scan\"}"
+                }
+              },
+              {
+                "id": "chatcmpl-tool-98436e80ed4ffc40",
+                "type": "function",
+                "function": {
+                  "name": "class_distribution",
+                  "arguments": "{}"
+                }
+              }
+            ],
+            "content": ""
+          },
+          {
+            "role": "tool",
+            "tool_call_id": "chatcmpl-tool-a44076b80beb06b8",
+            "content": "{\"detector\":\"structure_scan\",\"findings_found\":1,\"findings\":[{\"finding_id\":\"structure_scan:yaml_inconsistency:0\",\"type\":\"yaml_inconsistency\",\"detector_severity\":\"major\",\"title\":\"data.yaml is missing or inconsistent\",\"affected_files\":0,\"example_files\":[],\"example_evidence\":[\"data.yaml declares nc=15 but lists 12 names\"]}],\"hint\":\"Use inspect_finding to see the full evidence before deciding whether a finding is real.\"}"
+          },
+          {
+            "role": "tool",
+            "tool_call_id": "chatcmpl-tool-bc00158ffb0c3596",
+            "content": "{\"detector\":\"image_integrity_scan\",\"findings_found\":0,\"findings\":[],\"hint\":\"Use inspect_finding to see the full evidence before deciding whether a finding is real.\"}"
+          },
+          {
+            "role": "tool",
+            "tool_call_id": "chatcmpl-tool-96532e2f9e336d73",
+            "content": "{\"detector\":\"geometry_scan\",\"findings_found\":0,\"findings\":[],\"hint\":\"Use inspect_finding to see the full evidence before deciding whether a finding is real.\"}"
+          },
+          {
+            "role": "tool",
+            "tool_call_id": "chatcmpl-tool-ae30228d0cad5240",
+            "content": "{\"detector\":\"normalisation_scan\",\"findings_found\":0,\"findings\":[],\"hint\":\"Use inspect_finding to see the full evidence before deciding whether a finding is real.\"}"
+          },
+          {
+            "role": "tool",
+            "tool_call_id": "chatcmpl-tool-bb5fcbb2c7f8ffe3",
+            "content": "{\"detector\":\"class_scan\",\"findings_found\":1,\"findings\":[{\"finding_id\":\"class_scan:extreme_class_imbalance:0\",\"type\":\"extreme_class_imbalance\",\"detector_severity\":\"major\",\"title\":\"1 class(es) have too few instances to train or validate\",\"affected_files\":0,\"example_files\":[],\"example_evidence\":[\"'bowl' (id 6): only 2 instances in train; 992x rarer than the most common class; only 0 instances in val, so its per-class mAP is not meaningful\"]}],\"hint\":\"Use inspect_finding to see the full evidence before deciding whether a finding is real.\"}"
+          },
+          {
+            "role": "tool",
+            "tool_call_id": "chatcmpl-tool-a697ba0f54a25da8",
+            "content": "{\"detector\":\"duplicate_scan\",\"findings_found\":0,\"findings\":[],\"hint\":\"Use inspect_finding to see the full evidence before deciding whether a finding is real.\"}"
+          },
+          {
+            "role": "tool",
+            "tool_call_id": "chatcmpl-tool-98436e80ed4ffc40",
+            "content": "{\"instances_per_class_per_split\":{\"train\":{\"person\":1983,\"chair\":411,\"car\":577,\"dining table\":242,\"cup\":355,\"bottle\":192,\"bowl\":2,\"handbag\":274,\"truck\":201,\"bench\":185,\"book\":73,\"backpack\":196},\"val\":{\"person\":463,\"chair\":321,\"car\":47,\"dining table\":139,\"cup\":180,\"bottle\":263,\"bowl\":0,\"handbag\":25,\"truck\":15,\"bench\":25,\"book\":228,\"backpack\":36}}}"
+          }
+        ],
+        "tool_choice": "auto",
+        "n_tools": 7
+      },
+      "response": {
+        "content": "",
+        "tool_calls": [
+          {
+            "id": "chatcmpl-tool-b2c1edd338013434",
+            "type": "function",
+            "function": {
+              "name": "inspect_finding",
+              "arguments": "{\"finding_id\": \"structure_scan:yaml_inconsistency:0\"}"
+            }
+          },
+          {
+            "id": "chatcmpl-tool-b5f9ed629b51c906",
+            "type": "function",
+            "function": {
+              "name": "inspect_finding",
+              "arguments": "{\"finding_id\": \"class_scan:extreme_class_imbalance:0\"}"
+            }
+          }
+        ],
+        "finish_reason": "tool_calls"
+      },
+      "reasoning": "Let's check the two findings. Both are from exact detectors, so they can't be suppressed. Let's inspect the evidence for both.\n\n1. yaml_inconsistency: data.yaml declares nc=15 but only lists 12 names. This is a real problem \u2014 if nc=15 but there are only 12 names, the model will be trained with 15 classes, and classes 12\u201314 will be empty. In practice, this could cause problems: the model will allocate 15 output channels, and the 3 extra classes will never be learned. It won't crash, but it's a real defect. Severity: major (the detector says major).\n\n2. extreme_class_imbalance: 'bowl' has only 2 instances in train, and 0 in val. This is a real problem \u2014 the per-class mAP for bowl in val is meaningless (0 instances). This is a \"thin class\" case.\n\nLet's inspect both findings to check the evidence.\n",
+      "seconds": 7.64,
+      "prompt_tokens": 3140,
+      "completion_tokens": 289
+    },
+    {
+      "kind": "tool",
+      "name": "inspect_finding",
+      "request": {
+        "finding_id": "structure_scan:yaml_inconsistency:0"
+      },
+      "response": {
+        "finding_id": "structure_scan:yaml_inconsistency:0",
+        "type": "yaml_inconsistency",
+        "meaning": "data.yaml disagrees with the labels on disk",
+        "detector": "structure_scan",
+        "detector_severity": "major",
+        "title": "data.yaml is missing or inconsistent",
+        "explanation": "data.yaml declares nc=15 but lists 12 names",
+        "affected_files": [],
+        "affected_file_count": 0,
+        "evidence": [
+          "data.yaml declares nc=15 but lists 12 names"
+        ],
+        "proposed_fix": {
+          "action": "fix_data_yaml",
+          "targets": []
+        }
+      },
+      "reasoning": "",
+      "seconds": 0.0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0
+    },
+    {
+      "kind": "tool",
+      "name": "inspect_finding",
+      "request": {
+        "finding_id": "class_scan:extreme_class_imbalance:0"
+      },
+      "response": {
+        "finding_id": "class_scan:extreme_class_imbalance:0",
+        "type": "extreme_class_imbalance",
+        "meaning": "a class has too few instances to learn or to validate",
+        "detector": "class_scan",
+        "detector_severity": "major",
+        "title": "1 class(es) have too few instances to train or validate",
+        "explanation": "Under-represented classes do not simply score badly, they make the headline mAP misleading: a class with two validation instances moves the average by whole points on a single detection. Decide up front whether to merge, drop or collect more of these.",
+        "affected_files": [],
+        "affected_file_count": 0,
+        "evidence": [
+          "'bowl' (id 6): only 2 instances in train; 992x rarer than the most common class; only 0 instances in val, so its per-class mAP is not meaningful"
+        ],
+        "proposed_fix": {
+          "action": "rebalance_or_merge_classes",
+          "targets": [],
+          "class_ids": [
+            6
+          ]
+        }
+      },
+      "reasoning": "",
+      "seconds": 0.0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0
+    },
+    {
+      "kind": "llm",
+      "name": "qwen3.8-27b",
+      "request": {
+        "messages": [
+          {
+            "role": "system",
+            "content": "You audit object-detection training datasets in YOLO format.\n\nYour user is an ML engineer who has just inherited a labelled dataset and has to decide today whether to train on it. They are not asking for a list of everything technically imperfect. They need three answers: will this train at all, will the validation number mean anything, and what has to be fixed first.\n\nHow to work:\n\n1. Call dataset_summary first, to see the scale, the splits and the classes.\n\n2. Call list_detectors, then run the ones that matter. Each detector reports a `reliability`. Detectors marked exact read the files directly and use no language model, so what they say about the bytes on disk is fact, not opinion; run all of them, they are cheap. Detectors marked experimental are known to produce false positives - treat anything they return as a hypothesis you have to check, never as a finding on its own.\n\n3. Detector output is not a report. What needs your judgement is:\n\n   Ranking. A dataset with a train/val leak and a handful of oversized boxes has one urgent problem and one cosmetic one. Lead with what actually blocks the engineer, and say plainly what it costs them.\n\n   Reading the evidence. Before you ra\n... [1568 more chars]"
+          },
+          {
+            "role": "user",
+            "content": "Audit the dataset at /home/unk/projects/micro1-hackathon/dataset-doctor/data/cases/thin_classes. Decide whether it is safe to train on, and tell me what to fix first."
+          },
+          {
+            "role": "assistant",
+            "tool_calls": [
+              {
+                "id": "chatcmpl-tool-ae7f4dedb6b8b0be",
+                "type": "function",
+                "function": {
+                  "name": "dataset_summary",
+                  "arguments": "{}"
+                }
+              },
+              {
+                "id": "chatcmpl-tool-9c886e9446ae8515",
+                "type": "function",
+                "function": {
+                  "name": "list_detectors",
+                  "arguments": "{}"
+                }
+              }
+            ],
+            "content": ""
+          },
+          {
+            "role": "tool",
+            "tool_call_id": "chatcmpl-tool-ae7f4dedb6b8b0be",
+            "content": "{\"root\":\"/home/unk/projects/micro1-hackathon/dataset-doctor/data/cases/thin_classes\",\"num_classes\":12,\"class_names\":[\"person\",\"chair\",\"car\",\"dining table\",\"cup\",\"bottle\",\"bowl\",\"handbag\",\"truck\",\"bench\",\"book\",\"backpack\"],\"splits\":{\"train\":{\"images\":468,\"label_files\":468,\"boxes\":4691},\"val\":{\"images\":132,\"label_files\":132,\"boxes\":1742}},\"total_boxes\":6433,\"data_yaml_problem\":\"data.yaml declares nc=15 but lists 12 names\"}"
+          },
+          {
+            "role": "tool",
+            "tool_call_id": "chatcmpl-tool-9c886e9446ae8515",
+            "content": "{\"detectors\":[{\"name\":\"structure_scan\",\"description\":\"Pair images with label files and validate data.yaml. Detects missing_label_file, orphan_label_file, empty_label_file, malformed_label_row and yaml_inconsistency.\",\"detects\":[\"missing_label_file\",\"orphan_label_file\",\"empty_label_file\",\"malformed_label_row\",\"yaml_inconsistency\"],\"cost\":\"fast\",\"reliability\":\"exact - reads the files directly\",\"already_run\":false},{\"name\":\"image_integrity_scan\",\"description\":\"Open every image header to find files that cannot be decoded. Detects corrupt_image. Reads pixels, so slower than structure_scan.\",\"detects\":[\"corrupt_image\"],\"cost\":\"medium\",\"reliability\":\"exact - reads the files directly\",\"already_run\":false},{\"name\":\"geometry_scan\",\"description\":\"Validate every box's normalised coordinates. Detects out_of_bounds, degenerate_box, tiny_box and duplicate_annotation.\",\"detects\":[\"out_of_bounds\",\"degenerate_box\",\"tiny_box\",\"duplicate_annotation\"],\"cost\":\"fast\",\"reliability\":\"exact - reads the files directly\",\"already_run\":false},{\"name\":\"normalisation_scan\",\"description\":\"Check whether coordinates were ever normalised, by comparing label value ranges against the image dimensions. Detects denormali\n... [1235 more chars]"
+          },
+          {
+            "role": "assistant",
+            "tool_calls": [
+              {
+                "id": "chatcmpl-tool-a44076b80beb06b8",
+                "type": "function",
+                "function": {
+                  "name": "run_detector",
+                  "arguments": "{\"name\": \"structure_scan\"}"
+                }
+              },
+              {
+                "id": "chatcmpl-tool-bc00158ffb0c3596",
+                "type": "function",
+                "function": {
+                  "name": "run_detector",
+                  "arguments": "{\"name\": \"image_integrity_scan\"}"
+                }
+              },
+              {
+                "id": "chatcmpl-tool-96532e2f9e336d73",
+                "type": "function",
+                "function": {
+                  "name": "run_detector",
+                  "arguments": "{\"name\": \"geometry_scan\"}"
+                }
+              },
+              {
+                "id": "chatcmpl-tool-ae30228d0cad5240",
+                "type": "function",
+                "function": {
+                  "name": "run_detector",
+                  "arguments": "{\"name\": \"normalisation_scan\"}"
+                }
+              },
+              {
+                "id": "chatcmpl-tool-bb5fcbb2c7f8ffe3",
+                "type": "function",
+                "function": {
+                  "name": "run_detector",
+                  "arguments": "{\"name\": \"class_scan\"}"
+                }
+              },
+              {
+                "id": "chatcmpl-tool-a697ba0f54a25da8",
+                "type": "function",
+                "function": {
+                  "name": "run_detector",
+                  "arguments": "{\"name\": \"duplicate_scan\"}"
+                }
+              },
+              {
+                "id": "chatcmpl-tool-98436e80ed4ffc40",
+                "type": "function",
+                "function": {
+                  "name": "class_distribution",
+                  "arguments": "{}"
+                }
+              }
+            ],
+            "content": ""
+          },
+          {
+            "role": "tool",
+            "tool_call_id": "chatcmpl-tool-a44076b80beb06b8",
+            "content": "{\"detector\":\"structure_scan\",\"findings_found\":1,\"findings\":[{\"finding_id\":\"structure_scan:yaml_inconsistency:0\",\"type\":\"yaml_inconsistency\",\"detector_severity\":\"major\",\"title\":\"data.yaml is missing or inconsistent\",\"affected_files\":0,\"example_files\":[],\"example_evidence\":[\"data.yaml declares nc=15 but lists 12 names\"]}],\"hint\":\"Use inspect_finding to see the full evidence before deciding whether a finding is real.\"}"
+          },
+          {
+            "role": "tool",
+            "tool_call_id": "chatcmpl-tool-bc00158ffb0c3596",
+            "content": "{\"detector\":\"image_integrity_scan\",\"findings_found\":0,\"findings\":[],\"hint\":\"Use inspect_finding to see the full evidence before deciding whether a finding is real.\"}"
+          },
+          {
+            "role": "tool",
+            "tool_call_id": "chatcmpl-tool-96532e2f9e336d73",
+            "content": "{\"detector\":\"geometry_scan\",\"findings_found\":0,\"findings\":[],\"hint\":\"Use inspect_finding to see the full evidence before deciding whether a finding is real.\"}"
+          },
+          {
+            "role": "tool",
+            "tool_call_id": "chatcmpl-tool-ae30228d0cad5240",
+            "content": "{\"detector\":\"normalisation_scan\",\"findings_found\":0,\"findings\":[],\"hint\":\"Use inspect_finding to see the full evidence before deciding whether a finding is real.\"}"
+          },
+          {
+            "role": "tool",
+            "tool_call_id": "chatcmpl-tool-bb5fcbb2c7f8ffe3",
+            "content": "{\"detector\":\"class_scan\",\"findings_found\":1,\"findings\":[{\"finding_id\":\"class_scan:extreme_class_imbalance:0\",\"type\":\"extreme_class_imbalance\",\"detector_severity\":\"major\",\"title\":\"1 class(es) have too few instances to train or validate\",\"affected_files\":0,\"example_files\":[],\"example_evidence\":[\"'bowl' (id 6): only 2 instances in train; 992x rarer than the most common class; only 0 instances in val, so its per-class mAP is not meaningful\"]}],\"hint\":\"Use inspect_finding to see the full evidence before deciding whether a finding is real.\"}"
+          },
+          {
+            "role": "tool",
+            "tool_call_id": "chatcmpl-tool-a697ba0f54a25da8",
+            "content": "{\"detector\":\"duplicate_scan\",\"findings_found\":0,\"findings\":[],\"hint\":\"Use inspect_finding to see the full evidence before deciding whether a finding is real.\"}"
+          },
+          {
+            "role": "tool",
+            "tool_call_id": "chatcmpl-tool-98436e80ed4ffc40",
+            "content": "{\"instances_per_class_per_split\":{\"train\":{\"person\":1983,\"chair\":411,\"car\":577,\"dining table\":242,\"cup\":355,\"bottle\":192,\"bowl\":2,\"handbag\":274,\"truck\":201,\"bench\":185,\"book\":73,\"backpack\":196},\"val\":{\"person\":463,\"chair\":321,\"car\":47,\"dining table\":139,\"cup\":180,\"bottle\":263,\"bowl\":0,\"handbag\":25,\"truck\":15,\"bench\":25,\"book\":228,\"backpack\":36}}}"
+          },
+          {
+            "role": "assistant",
+            "tool_calls": [
+              {
+                "id": "chatcmpl-tool-b2c1edd338013434",
+                "type": "function",
+                "function": {
+                  "name": "inspect_finding",
+                  "arguments": "{\"finding_id\": \"structure_scan:yaml_inconsistency:0\"}"
+                }
+              },
+              {
+                "id": "chatcmpl-tool-b5f9ed629b51c906",
+                "type": "function",
+                "function": {
+                  "name": "inspect_finding",
+                  "arguments": "{\"finding_id\": \"class_scan:extreme_class_imbalance:0\"}"
+                }
+              }
+            ],
+            "content": ""
+          },
+          {
+            "role": "tool",
+            "tool_call_id": "chatcmpl-tool-b2c1edd338013434",
+            "content": "{\"finding_id\":\"structure_scan:yaml_inconsistency:0\",\"type\":\"yaml_inconsistency\",\"meaning\":\"data.yaml disagrees with the labels on disk\",\"detector\":\"structure_scan\",\"detector_severity\":\"major\",\"title\":\"data.yaml is missing or inconsistent\",\"explanation\":\"data.yaml declares nc=15 but lists 12 names\",\"affected_files\":[],\"affected_file_count\":0,\"evidence\":[\"data.yaml declares nc=15 but lists 12 names\"],\"proposed_fix\":{\"action\":\"fix_data_yaml\",\"targets\":[]}}"
+          },
+          {
+            "role": "tool",
+            "tool_call_id": "chatcmpl-tool-b5f9ed629b51c906",
+            "content": "{\"finding_id\":\"class_scan:extreme_class_imbalance:0\",\"type\":\"extreme_class_imbalance\",\"meaning\":\"a class has too few instances to learn or to validate\",\"detector\":\"class_scan\",\"detector_severity\":\"major\",\"title\":\"1 class(es) have too few instances to train or validate\",\"explanation\":\"Under-represented classes do not simply score badly, they make the headline mAP misleading: a class with two validation instances moves the average by whole points on a single detection. Decide up front whether to merge, drop or collect more of these.\",\"affected_files\":[],\"affected_file_count\":0,\"evidence\":[\"'bowl' (id 6): only 2 instances in train; 992x rarer than the most common class; only 0 instances in val, so its per-class mAP is not meaningful\"],\"proposed_fix\":{\"action\":\"rebalance_or_merge_classes\",\"targets\":[],\"class_ids\":[6]}}"
+          }
+        ],
+        "tool_choice": "auto",
+        "n_tools": 7
+      },
+      "response": {
+        "content": "Both findings are from exact detectors and check out against the evidence. Everything else \u2014 structure, image integrity, box geometry, normalisation, train/val leakage \u2014 is clean. Submitting the report.",
+        "tool_calls": [
+          {
+            "id": "chatcmpl-tool-b3d1645117cd27cc",
+            "type": "function",
+            "function": {
+              "name": "submit_report",
+              "arguments": "{\"verdict\": \"fix_before_training\", \"headline\": \"Fix the data.yaml class-count mismatch (nc=15 vs 12 names) before training, and decide what to do with 'bowl' (2 train instances, 0 in val); everything else in the dataset is clean.\", \"training_impact\": \"Training will either crash (frameworks that validate names against nc) or, worse, silently run with 15 output channels where 3 are never labelled \u2014 your headline mAP is then averaged over 3 phantom classes and understated by ~20%, so the number you use to make the go/no-go decision is wrong. Separately, 'bowl' is unlearnable (2 train boxes) and unmeasurable (0 val boxes), so any per-class mAP for it is noise.\", \"decisions\": [{\"finding_id\": \"structure_scan:yaml_inconsistency:0\", \"action\": \"report\", \"severity\": \"major\", \"rationale\": \"data.yaml declares nc=15 but lists only 12 class names. One-line fix: set nc=12. Until then the run may crash on a names/nc validation, or it will train 3 dead channels and compute mAP over 15 classes, diluting the headline metric by ~20% and misaligning any class-name mapping in downstream tooling. Cheapest fix on the list and it directly corrupts the validation number, so it goes first.\"}, {\"finding_id\": \"class_scan:extreme_class_imbalance:0\", \"action\": \"report\", \"severity\": \"major\", \"rationale\": \"'bowl' (id 6) has 2 instances in train and 0 in val \u2014 992x rarer than 'person'. It cannot be learned and its per-class mAP is undefined, which also skews any macro-averaged mAP. This is a data-coverage decision, not a file edit: drop the class, merge it into a parent class, or collect more bowl images before the next training run. All other 11 classes have healthy counts in both splits (worst case: 'truck' with 15 val instances).\"}]}"
+            }
+          }
+        ],
+        "finish_reason": "tool_calls"
+      },
+      "reasoning": "Let me evaluate the two findings:\n\n1. **yaml_inconsistency**: data.yaml declares nc=15 but only lists 12 names. This is a real defect (exact detector, cannot be suppressed). Impact: if the training framework reads nc=15, the model will allocate 15 output channels, but only 12 classes are actually labeled. The extra 3 channels will never be trained, and the mAP calculation will include 3 empty classes, diluting the headline mAP. In some frameworks, a mismatch between nc and the number of names can cause a crash or a misalignment of class names. This is a real defect that should be fixed before training \u2014 it's a one-line fix (set nc=12). Severity: major (not critical \u2014 it won't necessarily crash, but it will corrupt the metrics). In fact, in many YOLO pipelines, if nc=15 but only 12 names are listed, the training itself will proceed, but the evaluation will be computed over 15 classes, 3 of which are empty \u2192 mAP gets diluted. This is a \"the validation numbers lose their meaning\" problem. Major.\n\n2. **extreme_class_imbalance**: 'bowl' has only 2 instances in train, 0 in val, and is 992x rarer than the most common class. This is a real defect (exact detector). Impact: bowl's per-class mAP is meaningless (0 in val), and the class is effectively unlearnable. This is a data-coverage problem \u2014 the fix is to collect more data, merge the class, or drop it. This is a major issue, but it's a data-coverage problem, not a defect that can be fixed by editing files.\n\nBoth are major. No critical findings. No leaks, no geometry issues, no normalization issues, no corrupted images, no missing labels.\n\nVerdict: the most severe reported finding is major \u2192 \"fix_before_training\".\n\nRanking: which is more urgent? The yaml inconsistency is a one-line fix that corrupts the headline mAP (3 phantom classes dilute the average, and in some frameworks the class-name mapping gets misaligned). The bowl imbalance is a data-coverage problem that requires a decision (merge/drop/collect) \u2014 it's not something you can fix in a file edit today, but it does affect the meaning of the metrics.\n\nI think the yaml issue is the first fix (cheap, and it corrupts the metrics). The bowl imbalance is second (a decision is needed, but it's not a blocker for training itself).\n\nActually, let me think about the severity of the yaml issue. nc=15 vs 12 names. In YOLO, if data.yaml has nc=15 and names: [12 names], the training will run with 15 classes. The 3 extra classes will have no labels. The mAP will be averaged over 15 classes, 3 of which are 0 \u2192 the headline mAP drops by about 20%. This is a real \"the validation numbers lose their meaning\" problem. Some frameworks (e.g., ultralytics) will actually throw an error if the length of names doesn't match nc. So it could even crash. Either way: fix before training, one-line fix.\n\nBowl: 2 instances in train, 0 in val. The model can't learn bowl, and bowl's mAP is undefined. This is a data-coverage problem. The engineer has to decide: drop the class, merge it, or collect more data. This is a major issue, but it's a decision, not a fix.\n\nBoth are major \u2192 verdict is fix_before_training.\n\nHeadline: \"Fix the nc mismatch in data.yaml (15 vs 12) before training, and decide what to do about 'bowl' (2 train instances, 0 in val) \u2014 everything else is clean.\"\n\nTraining impact: if you train as-is, the run will either crash (frameworks that validate names against nc) or silently compute mAP over 15 classes, 3 of which are empty, diluting the headline mAP by about 20%. And bowl will be unlearnable and unmeasurable.\n\nLet me write the report.\n",
+      "seconds": 32.17,
+      "prompt_tokens": 3543,
+      "completion_tokens": 1447
+    },
+    {
+      "kind": "tool",
+      "name": "submit_report",
+      "request": {
+        "verdict": "fix_before_training",
+        "headline": "Fix the data.yaml class-count mismatch (nc=15 vs 12 names) before training, and decide what to do with 'bowl' (2 train instances, 0 in val); everything else in the dataset is clean.",
+        "training_impact": "Training will either crash (frameworks that validate names against nc) or, worse, silently run with 15 output channels where 3 are never labelled \u2014 your headline mAP is then averaged over 3 phantom classes and understated by ~20%, so the number you use to make the go/no-go decision is wrong. Separately, 'bowl' is unlearnable (2 train boxes) and unmeasurable (0 val boxes), so any per-class mAP for it is noise.",
+        "decisions": [
+          {
+            "finding_id": "structure_scan:yaml_inconsistency:0",
+            "action": "report",
+            "severity": "major",
+            "rationale": "data.yaml declares nc=15 but lists only 12 class names. One-line fix: set nc=12. Until then the run may crash on a names/nc validation, or it will train 3 dead channels and compute mAP over 15 classes, diluting the headline metric by ~20% and misaligning any class-name mapping in downstream tooling. Cheapest fix on the list and it directly corrupts the validation number, so it goes first."
+          },
+          {
+            "finding_id": "class_scan:extreme_class_imbalance:0",
+            "action": "report",
+            "severity": "major",
+            "rationale": "'bowl' (id 6) has 2 instances in train and 0 in val \u2014 992x rarer than 'person'. It cannot be learned and its per-class mAP is undefined, which also skews any macro-averaged mAP. This is a data-coverage decision, not a file edit: drop the class, merge it into a parent class, or collect more bowl images before the next training run. All other 11 classes have healthy counts in both splits (worst case: 'truck' with 15 val instances)."
+          }
+        ]
+      },
+      "response": {
+        "status": "report recorded",
+        "decisions": 2
+      },
+      "reasoning": "",
+      "seconds": 0.0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0
+    }
+  ]
+}

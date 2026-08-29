@@ -1,0 +1,89 @@
+{
+  "verdict": "fix_before_training",
+  "headline": "Dataset contains out-of-bounds coordinates, missing label files in the validation split, and an empty label file that must be corrected before training.",
+  "findings": [
+    {
+      "type": "out_of_bounds",
+      "severity": "critical",
+      "files": [
+        "train/000000180751",
+        "train/000000558854",
+        "train/000000541634",
+        "train/000000361238",
+        "train/000000355325",
+        "train/000000461751",
+        "train/000000345356",
+        "val/000000297084",
+        "val/000000448256"
+      ],
+      "rationale": "Several boxes have coordinates that extend beyond the [0, 1] normalized range (e.g., x2 > 1 or y2 > 1). This violates YOLO format requirements and will cause errors or incorrect training behavior."
+    },
+    {
+      "type": "missing_label_file",
+      "severity": "major",
+      "files": [
+        "val"
+      ],
+      "rationale": "The validation split has 132 images but only 130 label files. Two images are missing their corresponding label files, which will cause the training script to fail or skip these images."
+    },
+    {
+      "type": "empty_label_file",
+      "severity": "major",
+      "files": [
+        "train/000000211120"
+      ],
+      "rationale": "The label file for train/000000211120 is empty. While technically valid if the image contains no objects, it is often a sign of a failed annotation process. It should be verified or removed if the image is not actually empty."
+    }
+  ],
+  "_files_shown": [
+    "train/000000363840",
+    "train/000000463527",
+    "val/000000009590",
+    "train/000000057672",
+    "train/000000448410",
+    "val/000000379441",
+    "train/000000476119",
+    "train/000000468332",
+    "train/000000094751",
+    "train/000000361730",
+    "train/000000085157",
+    "train/000000357816",
+    "val/000000356248",
+    "train/000000180751",
+    "train/000000157756",
+    "train/000000567197",
+    "train/000000540414",
+    "train/000000130386",
+    "train/000000575970",
+    "val/000000416451",
+    "train/000000558854",
+    "train/000000541634",
+    "val/000000297084",
+    "train/000000447342",
+    "train/000000367095",
+    "val/000000340175",
+    "train/000000374052",
+    "train/000000349184",
+    "train/000000295420",
+    "train/000000030828",
+    "train/000000191013",
+    "train/000000461751",
+    "train/000000345356",
+    "train/000000248314",
+    "train/000000540502",
+    "train/000000361238",
+    "train/000000508917",
+    "train/000000490936",
+    "train/000000470924",
+    "train/000000355325",
+    "train/398764888884",
+    "train/000000036936",
+    "train/000000171382",
+    "train/000000580410",
+    "val/000000448256",
+    "train/000000204186",
+    "train/000000287874",
+    "train/000000172648",
+    "train/000000211120"
+  ]
+}

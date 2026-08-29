@@ -1,0 +1,61 @@
+{
+  "findings": [
+    {
+      "type": "empty_label_file",
+      "title": "4 label file(s) contain no boxes",
+      "detail": "Intentional background images are a legitimate technique, but an unintended empty file is a silently dropped annotation. Confirm these are deliberate.",
+      "detector": "structure_scan",
+      "items": [
+        "train/000000145597",
+        "train/000000376307",
+        "train/000000482436",
+        "val/000000045229"
+      ],
+      "evidence": [
+        "0 rows in train/000000145597.txt",
+        "0 rows in train/000000376307.txt",
+        "0 rows in train/000000482436.txt",
+        "0 rows in val/000000045229.txt"
+      ],
+      "severity": "minor",
+      "fix": {
+        "action": "review_background_images",
+        "targets": [
+          "train/000000145597",
+          "train/000000376307",
+          "train/000000482436",
+          "val/000000045229"
+        ]
+      },
+      "verified": null,
+      "verifier_note": ""
+    },
+    {
+      "type": "orphan_label_file",
+      "title": "3 label file(s) have no image",
+      "detail": "These labels are never read during training. Usually the remains of a deleted or renamed image.",
+      "detector": "structure_scan",
+      "items": [
+        "train/639462453486",
+        "train/915238652806",
+        "train/920332787315"
+      ],
+      "evidence": [
+        "labels present, image absent: train/639462453486",
+        "labels present, image absent: train/915238652806",
+        "labels present, image absent: train/920332787315"
+      ],
+      "severity": "minor",
+      "fix": {
+        "action": "delete_orphan_labels",
+        "targets": [
+          "train/639462453486",
+          "train/915238652806",
+          "train/920332787315"
+        ]
+      },
+      "verified": null,
+      "verifier_note": ""
+    }
+  ]
+}

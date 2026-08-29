@@ -1,0 +1,46 @@
+{
+  "verdict": "blocked",
+  "headline": "4 val images are byte-identical to train images, so the validation metric is untrustworthy \u2014 re-split before training, or you will retrain after the fact.",
+  "training_impact": "Training will run fine (no NaNs, no structural or geometry defects), but the val set contains 4 images the model has seen in training, so every val metric is inflated by an unknown margin and cannot be used to compare checkpoints or decide readiness. Additionally, 3 duplicated boxes in train double-count in the loss, and 2 near-duplicate train pairs slightly over-weight their scenes.",
+  "detectors_run": [
+    "structure_scan",
+    "image_integrity_scan",
+    "geometry_scan",
+    "normalisation_scan",
+    "class_scan",
+    "duplicate_scan"
+  ],
+  "suppressed": 0,
+  "reinstated": 0,
+  "swept_fallback": false,
+  "incomplete": "",
+  "decisions": [
+    {
+      "finding_id": "duplicate_scan:train_val_leakage:0",
+      "type": "train_val_leakage",
+      "action": "report",
+      "severity": "critical",
+      "source": "agent",
+      "rationale": "Exact detector, sha1-verified: val/214827540762, val/382780712741, val/438274936455, val/889941193761 are byte-identical to train/000000476787, train/000000056127, train/000000080932, train/000000166166 respectively. The model trains on these exact images and is then scored on them, so the val number is optimistic by an unknown margin and meaningless for go/no-go decisions. Fix: remove the 4 val images (or re-split by content hash) before any training run \u2014 fixing this later means retraining.",
+      "files": 8
+    },
+    {
+      "finding_id": "geometry_scan:duplicate_annotation:0",
+      "type": "duplicate_annotation",
+      "action": "report",
+      "severity": "major",
+      "source": "agent",
+      "rationale": "Exact detector: 3 label files each list the same box twice (e.g. train/000000231822 line 6 repeats line 4). Duplicated boxes double-count in the loss and break the one-target-per-object assumption of NMS-free matchers, biasing training on those objects. Fix: delete the repeated lines in train/000000231822, train/000000255917, train/000000462756. Small in scale (3 boxes of 6815) but a real defect, and trivial to fix alongside the re-split.",
+      "files": 3
+    },
+    {
+      "finding_id": "duplicate_scan:near_duplicate_image:1",
+      "type": "near_duplicate_image",
+      "action": "report",
+      "severity": "major",
+      "source": "agent",
+      "rationale": "Exact detector: 2 near-identical pairs inside train (one at perceptual distance 0/64, i.e. effectively identical; one at 1/64). Duplicates inside train over-weight whatever those scenes contain and inflate the reported dataset size. All 4 files are in train, so the val metric is not affected by this. Fix: drop one image from each pair (train/000000150638 vs train/912024475486; train/000000295420 vs train/303522373741) during the same cleanup pass.",
+      "files": 4
+    }
+  ]
+}

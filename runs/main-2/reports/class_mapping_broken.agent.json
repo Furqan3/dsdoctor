@@ -1,0 +1,37 @@
+{
+  "verdict": "blocked",
+  "headline": "Do not train yet: 4 boxes use class ids 13/15 that don't exist in data.yaml (2 of them in val), and 3 train rows have a stray 6th field \u2014 both are trivial to fix, but either one crashes or corrupts the run as-is.",
+  "training_impact": "Ultralytics dataset verification will raise on the out-of-range class ids before training starts; a hand-rolled loader will index past the classification head mid-epoch. The 3 six-field rows will either raise during label scanning or be silently dropped depending on loader version. Because 2 of the bad class ids sit in val, any val metric computed with a lenient loader would also be wrong \u2014 the number you'd use to make the go/no-go decision is untrustworthy until this is fixed.",
+  "detectors_run": [
+    "structure_scan",
+    "geometry_scan",
+    "class_scan",
+    "normalisation_scan",
+    "duplicate_scan",
+    "image_integrity_scan"
+  ],
+  "suppressed": 0,
+  "reinstated": 0,
+  "swept_fallback": false,
+  "incomplete": "",
+  "decisions": [
+    {
+      "finding_id": "class_scan:class_id_out_of_range:0",
+      "type": "class_id_out_of_range",
+      "action": "report",
+      "severity": "critical",
+      "source": "agent",
+      "rationale": "Verified against raw rows: train/000000436883 line 4 (id 13), train/000000492362 line 5 (id 15), val/000000297084 line 4 (id 13), val/000000536947 line 1 (id 15) \u2014 data.yaml defines only 12 classes (0..11). This is the root defect of this dataset: labels were written against a different class mapping and never remapped. It blocks in both splits, so it breaks training AND poisons the val set. Fix: drop these 4 rows (4 of 6760 boxes, negligible loss) or remap to the correct class if you can recover the original mapping. Do this first.",
+      "files": 4
+    },
+    {
+      "finding_id": "structure_scan:malformed_label_row:0",
+      "type": "malformed_label_row",
+      "action": "report",
+      "severity": "critical",
+      "source": "agent",
+      "rationale": "Verified: 3 train rows (000000085376:4, 000000336053:8, 000000468332:5) each have 6 fields with an identical trailing '0.87' \u2014 a one-directional, systematic pattern consistent with a converter that appended a confidence score, not random corruption. The first 5 fields on each row are valid, in-range normalized boxes, so the fix is to delete the 6th field, not the row. Train-only, so it doesn't affect val metrics, but it will raise (or silently drop boxes) during label scanning depending on loader. Fix alongside the class-id remap, then re-run the scan.",
+      "files": 3
+    }
+  ]
+}

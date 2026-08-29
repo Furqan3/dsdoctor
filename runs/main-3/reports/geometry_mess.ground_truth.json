@@ -1,0 +1,64 @@
+{
+  "seed": 104,
+  "recipe": {
+    "out_of_bounds": 5,
+    "degenerate_box": 3,
+    "tiny_box": 4
+  },
+  "applied": {
+    "out_of_bounds": 5,
+    "degenerate_box": 3,
+    "tiny_box": 4
+  },
+  "ground_truth": [
+    [
+      "degenerate_box",
+      "train/000000033221"
+    ],
+    [
+      "degenerate_box",
+      "train/000000067616"
+    ],
+    [
+      "degenerate_box",
+      "val/000000340175"
+    ],
+    [
+      "out_of_bounds",
+      "train/000000135561"
+    ],
+    [
+      "out_of_bounds",
+      "train/000000361238"
+    ],
+    [
+      "out_of_bounds",
+      "train/000000437239"
+    ],
+    [
+      "out_of_bounds",
+      "val/000000035279"
+    ],
+    [
+      "out_of_bounds",
+      "val/000000199771"
+    ],
+    [
+      "tiny_box",
+      "train/000000137727"
+    ],
+    [
+      "tiny_box",
+      "train/000000295713"
+    ],
+    [
+      "tiny_box",
+      "train/000000435880"
+    ],
+    [
+      "tiny_box",
+      "train/000000577932"
+    ]
+  ],
+  "collateral": []
+}

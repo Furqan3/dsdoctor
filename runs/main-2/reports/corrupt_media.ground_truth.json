@@ -1,0 +1,38 @@
+{
+  "seed": 106,
+  "recipe": {
+    "corrupt_image": 4,
+    "missing_label_file": 2
+  },
+  "applied": {
+    "corrupt_image": 4,
+    "missing_label_file": 2
+  },
+  "ground_truth": [
+    [
+      "corrupt_image",
+      "train/000000076547"
+    ],
+    [
+      "corrupt_image",
+      "train/000000140987"
+    ],
+    [
+      "corrupt_image",
+      "train/000000271116"
+    ],
+    [
+      "corrupt_image",
+      "val/000000539883"
+    ],
+    [
+      "missing_label_file",
+      "train/000000303713"
+    ],
+    [
+      "missing_label_file",
+      "train/000000577976"
+    ]
+  ],
+  "collateral": []
+}

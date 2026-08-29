@@ -1,0 +1,37 @@
+{
+  "verdict": "usable_with_caveats",
+  "headline": "Safe to train: no leakage, no corrupt images, no bad boxes \u2014 only 3 orphan label files and 4 empty label files to clean up or confirm.",
+  "training_impact": "Training runs fine as-is. The 3 orphan labels are never read (dead files). The 4 empty labels are treated as background images: if they are deliberate, zero impact; if they are lost annotations, you lose a few training boxes and one val image (val/000000045229) silently skews the validation number slightly.",
+  "detectors_run": [
+    "structure_scan",
+    "image_integrity_scan",
+    "geometry_scan",
+    "normalisation_scan",
+    "class_scan",
+    "duplicate_scan"
+  ],
+  "suppressed": 0,
+  "reinstated": 0,
+  "swept_fallback": false,
+  "incomplete": "",
+  "decisions": [
+    {
+      "finding_id": "structure_scan:empty_label_file:1",
+      "type": "empty_label_file",
+      "action": "report",
+      "severity": "minor",
+      "source": "agent",
+      "rationale": "4 label files with zero boxes (3 train, 1 val). Empty labels are a legitimate background-image technique, but an unintended empty file is a silently dropped annotation. Spot-check the 4 images; the one in val (val/000000045229) is the only one that can touch your validation number \u2014 if it actually contains objects, your val metric is being quietly biased. Confirm deliberate, or re-annotate.",
+      "files": 4
+    },
+    {
+      "finding_id": "structure_scan:orphan_label_file:0",
+      "type": "orphan_label_file",
+      "action": "report",
+      "severity": "minor",
+      "source": "agent",
+      "rationale": "3 label files in train (639462453486, 915238652806, 920332787315) have no matching image. They are never read during training, so this is pure hygiene \u2014 delete them. No accuracy or stability impact.",
+      "files": 3
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "verdict": "blocked",
+  "headline": "4 truncated images (3 train, 1 val) will crash the dataloader or silently corrupt your val metrics \u2014 delete them before training; 2 train images are also missing label files.",
+  "training_impact": "Training as-is: the dataloader will either abort the epoch on the truncated files or skip them with a warning that is easy to miss in a long log. The one corrupt image in val (val/000000539883) breaks the validation pass, so the mAP you use for the go/no-go decision is computed on a set that can't be read \u2014 the number is not trustworthy. Separately, the 2 unlabelled train images are treated as pure background, which suppresses recall for whatever objects they contain.",
+  "detectors_run": [
+    "structure_scan",
+    "image_integrity_scan",
+    "geometry_scan",
+    "normalisation_scan",
+    "class_scan",
+    "duplicate_scan"
+  ],
+  "suppressed": 0,
+  "reinstated": 0,
+  "swept_fallback": false,
+  "incomplete": "",
+  "decisions": [
+    {
+      "finding_id": "image_integrity_scan:corrupt_image:0",
+      "type": "corrupt_image",
+      "action": "report",
+      "severity": "critical",
+      "source": "agent",
+      "rationale": "Exact detector, verified: all 4 files are truncated and fail to decode (OSError: image file is truncated, 15-62 bytes unprocessed), while their label files are intact and valid \u2014 pure media corruption. 3 in train, 1 in val. A corrupt image aborts the epoch in most training loops or is skipped with an easy-to-miss warning; the val one means your validation metric is computed on a broken set. Fix: delete all 4 image+label pairs (train/000000076547, train/000000140987, train/000000271116, val/000000539883) or re-export them from the source. This is the only thing that blocks the run.",
+      "files": 4
+    },
+    {
+      "finding_id": "structure_scan:missing_label_file:0",
+      "type": "missing_label_file",
+      "action": "report",
+      "severity": "major",
+      "source": "agent",
+      "rationale": "Exact detector, verified: train/000000303713 and train/000000577976 have no .txt file. Ultralytics treats an image with no label as a pure background image, so if these actually contain objects the model is being explicitly taught to ignore them \u2014 a silent recall hit on those classes. Fix: check the two images; if they contain objects, annotate them; if they are genuinely empty scenes, create empty .txt files to make the intent explicit. Only 2 of 468 train images, so the cost is small, but it is a real defect, not a cosmetic one.",
+      "files": 2
+    }
+  ]
+}

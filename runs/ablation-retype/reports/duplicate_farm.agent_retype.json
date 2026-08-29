@@ -1,0 +1,37 @@
+{
+  "verdict": "fix_before_training",
+  "headline": "Trainable, but train is padded with 4 byte-identical image pairs and 4 duplicated boxes. Fix both before training; the validation set is clean and the val number will be trustworthy.",
+  "training_impact": "Will train fine \u2014 no NaN, no corrupt files, no out-of-bounds boxes, no cross-split leak. The two defects are in train only, so they do not corrupt the validation metric. Cost of ignoring them: the 4 duplicated scenes are double-weighted in the loss (the model overfits to whatever those 8 images contain) and the reported dataset size is inflated; the 4 duplicated boxes double-count in the loss and break the one-target-per-object assumption in NMS-free matchers. Neither blocks a run, both quietly bias the model, so dedupe first.",
+  "detectors_run": [
+    "structure_scan",
+    "image_integrity_scan",
+    "geometry_scan",
+    "normalisation_scan",
+    "class_scan",
+    "duplicate_scan"
+  ],
+  "suppressed": 0,
+  "reinstated": 0,
+  "swept_fallback": false,
+  "incomplete": "",
+  "decisions": [
+    {
+      "finding_id": "retyped:0",
+      "type": "near_duplicate_image",
+      "action": "report",
+      "severity": "major",
+      "source": "retyped",
+      "rationale": "4 pairs of byte-identical images inside train (perceptual distance 0/64). Verified by hand: 000000064084/404490299022 share the same 640x436 size and all 7 label rows match exactly; 000000077396/553349435394 share 640x480 and all 3 rows match exactly. These are exact copies, not similar scenes, so they are a real duplication, not a false positive. Effect: each duplicated scene is counted twice in the loss (over-weighting whatever those images contain) and the dataset size is inflated. All 8 files are in train, so the validation metric is unaffected. Fix: drop one image+label from each pair (keep the 000000xxxx stems, remove the 8-digit-suffix copies).",
+      "files": 8
+    },
+    {
+      "finding_id": "retyped:1",
+      "type": "duplicate_annotation",
+      "action": "report",
+      "severity": "major",
+      "source": "retyped",
+      "rationale": "4 boxes are listed twice in 4 train label files. Verified: 000000016451 line 9 is a verbatim repeat of line 8 (backpack 0.878227 0.7872475 0.13799 0.100703); the other three are the same pattern (a later line repeating an earlier one). Duplicated boxes double-count in the loss and break the one-target-per-object assumption used by NMS-free matchers. All in train, so val is unaffected. Fix: delete the repeated line in each of the 4 files.",
+      "files": 4
+    }
+  ]
+}

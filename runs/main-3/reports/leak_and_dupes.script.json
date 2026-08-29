@@ -1,0 +1,93 @@
+{
+  "findings": [
+    {
+      "type": "train_val_leakage",
+      "title": "4 image pair(s) leak between train and val",
+      "detail": "The validation split contains content the model trained on. Every metric computed against it is optimistic by an unknown margin, so it cannot be used to compare checkpoints or to decide the model is ready to ship. Re-split before doing anything else - fixing this after training means retraining.",
+      "detector": "duplicate_scan",
+      "items": [
+        "train/000000056127",
+        "train/000000080932",
+        "train/000000166166",
+        "train/000000476787",
+        "val/214827540762",
+        "val/382780712741",
+        "val/438274936455",
+        "val/889941193761"
+      ],
+      "evidence": [
+        "val/214827540762 is byte-identical to train/000000476787 (sha1 37fead158d85)",
+        "val/382780712741 is byte-identical to train/000000056127 (sha1 9d075c4e25e8)",
+        "val/438274936455 is byte-identical to train/000000080932 (sha1 3f401d29a613)",
+        "val/889941193761 is byte-identical to train/000000166166 (sha1 c67f34fd8b6e)"
+      ],
+      "severity": "critical",
+      "fix": {
+        "action": "resplit_removing_leaks",
+        "targets": [
+          "val/214827540762",
+          "val/382780712741",
+          "val/438274936455",
+          "val/889941193761"
+        ]
+      },
+      "verified": null,
+      "verifier_note": ""
+    },
+    {
+      "type": "near_duplicate_image",
+      "title": "2 near-duplicate image pair(s) inside a split",
+      "detail": "Duplicates inside train over-weight whatever they contain and inflate the dataset size the team reports. Duplicates inside val make one scene count several times toward the score.",
+      "detector": "duplicate_scan",
+      "items": [
+        "train/000000150638",
+        "train/000000295420",
+        "train/303522373741",
+        "train/912024475486"
+      ],
+      "evidence": [
+        "train/000000150638 ~ train/912024475486 (perceptual distance 1/64)",
+        "train/000000295420 ~ train/303522373741 (perceptual distance 0/64)"
+      ],
+      "severity": "major",
+      "fix": {
+        "action": "deduplicate_images",
+        "targets": [
+          "train/000000150638",
+          "train/000000295420",
+          "train/303522373741",
+          "train/912024475486"
+        ]
+      },
+      "verified": null,
+      "verifier_note": ""
+    },
+    {
+      "type": "duplicate_annotation",
+      "title": "3 box(es) are listed more than once in the same file",
+      "detail": "Duplicated boxes double-count in the loss and break the one-target-per-object assumption used by NMS-free matchers.",
+      "detector": "geometry_scan",
+      "items": [
+        "train/000000231822",
+        "train/000000255917",
+        "train/000000462756"
+      ],
+      "evidence": [
+        "train/000000231822 line 6 repeats line 4: '4 0.45267000 0.19101100 0.13306000 0.36856000'",
+        "train/000000255917 line 15 repeats line 7: '2 0.30855500 0.77034000 0.06717200 0.03032800'",
+        "train/000000462756 line 3 repeats line 2: '2 0.08343750 0.46062200 0.04906300 0.04899000'"
+      ],
+      "severity": "major",
+      "fix": {
+        "action": "dedupe_annotations",
+        "targets": [
+          "train/000000231822",
+          "train/000000255917",
+          "train/000000462756"
+        ]
+      },
+      "verified": null,
+      "verifier_note": ""
+    }
+  ]
+}

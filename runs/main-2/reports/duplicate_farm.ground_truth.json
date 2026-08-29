@@ -1,0 +1,62 @@
+{
+  "seed": 109,
+  "recipe": {
+    "near_duplicate_image": 4,
+    "duplicate_annotation": 4
+  },
+  "applied": {
+    "near_duplicate_image": 8,
+    "duplicate_annotation": 4
+  },
+  "ground_truth": [
+    [
+      "duplicate_annotation",
+      "train/000000016451"
+    ],
+    [
+      "duplicate_annotation",
+      "train/000000136715"
+    ],
+    [
+      "duplicate_annotation",
+      "train/000000230993"
+    ],
+    [
+      "duplicate_annotation",
+      "train/000000313588"
+    ],
+    [
+      "near_duplicate_image",
+      "train/000000064084"
+    ],
+    [
+      "near_duplicate_image",
+      "train/000000077396"
+    ],
+    [
+      "near_duplicate_image",
+      "train/000000227399"
+    ],
+    [
+      "near_duplicate_image",
+      "train/000000435208"
+    ],
+    [
+      "near_duplicate_image",
+      "train/354608865506"
+    ],
+    [
+      "near_duplicate_image",
+      "train/404490299022"
+    ],
+    [
+      "near_duplicate_image",
+      "train/553349435394"
+    ],
+    [
+      "near_duplicate_image",
+      "train/931528508977"
+    ]
+  ],
+  "collateral": []
+}

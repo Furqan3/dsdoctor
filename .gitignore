@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# Downloaded or generated data. Everything here is rebuilt by
+# eval/build_corpus.py and eval/run_eval.py; none of it is ours to redistribute.
+data/_cache/
+data/corpus_clean/
+data/cases*/
+yolov8n.pt
+audit_out/
+
+# Evaluation output is kept for the submission, but scratch runs are not.
+runs/scratch*/

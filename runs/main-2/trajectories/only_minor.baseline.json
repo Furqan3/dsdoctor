@@ -1,0 +1,50 @@
+{
+  "agent": "baseline-single-prompt",
+  "model": "qwen3.8-27b",
+  "llm_calls": 1,
+  "tool_calls": 0,
+  "prompt_tokens": 36171,
+  "completion_tokens": 627,
+  "wall_seconds": 47.96,
+  "steps": [
+    {
+      "kind": "note",
+      "name": "note",
+      "request": null,
+      "response": {
+        "text": "baseline context: 49/603 label files, 25967 chars of label rows"
+      },
+      "reasoning": "",
+      "seconds": 0.0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0
+    },
+    {
+      "kind": "llm",
+      "name": "qwen3.8-27b",
+      "request": {
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are reviewing an object-detection dataset in YOLO format to decide whether it is safe to train on. Below is a summary of the dataset, the list of files in each split, and the raw label rows for a large sample of those files.\n\nReport every defect you can find. These are the defect types, use these exact type ids:\n\n  out_of_bounds - box coordinates fall outside the normalised [0,1] range\n  denormalised_coords - coordinates look like raw pixels, not normalised fractions\n  degenerate_box - box has zero or negative width/height\n  class_id_out_of_range - class id is >= the number of classes in data.yaml\n  corrupt_image - image file cannot be decoded\n  train_val_leakage - the same image content appears in both train and val\n  malformed_label_row - label row does not have 5 whitespace-separated fields\n  class_swap - a group of boxes carries a systematically wrong class id\n  duplicate_annotation - the same box is listed more than once in one label file\n  missing_label_file - image has no corresponding label file\n  near_duplicate_image - perceptually near-identical images inflate the dataset\n  tiny_box - box is small enough to be dropped or destabilise training\n  extreme_class_imbalance \n... [744 more chars]"
+          },
+          {
+            "role": "user",
+            "content": "## Dataset summary\n```json\n{\n  \"root\": \"/home/unk/projects/micro1-hackathon/dataset-doctor/data/cases/only_minor\",\n  \"nc\": 12,\n  \"names\": [\n    \"person\",\n    \"chair\",\n    \"car\",\n    \"dining table\",\n    \"cup\",\n    \"bottle\",\n    \"bowl\",\n    \"handbag\",\n    \"truck\",\n    \"bench\",\n    \"book\",\n    \"backpack\"\n  ],\n  \"splits\": {\n    \"train\": {\n      \"images\": 468,\n      \"label_files\": 471,\n      \"boxes\": 4920\n    },\n    \"val\": {\n      \"images\": 132,\n      \"label_files\": 132,\n      \"boxes\": 1813\n    }\n  },\n  \"total_boxes\": 6733,\n  \"class_counts\": {\n    \"person\": 2439,\n    \"chair\": 731,\n    \"car\": 624,\n    \"dining table\": 379,\n    \"cup\": 531,\n    \"bottle\": 447,\n    \"bowl\": 330,\n    \"handbag\": 297,\n    \"truck\": 216,\n    \"bench\": 210,\n    \"book\": 297,\n    \"backpack\": 232\n  },\n  \"yaml_error\": null\n}\n```\n\n## File listing\n```json\n{\n  \"train\": [\n    \"000000001000\",\n    \"000000001268\",\n    \"000000002685\",\n    \"000000006040\",\n    \"000000007088\",\n    \"000000011197\",\n    \"000000011511\",\n    \"000000012670\",\n    \"000000013729\",\n    \"000000016249\",\n    \"000000016451\",\n    \"000000017899\",\n    \"000000018380\",\n    \"000000018575\",\n    \"000000018837\",\n    \"000000025181\",\n    \"000000026204\",\n    \"000000030828\",\n... [37777 more chars]"
+          }
+        ],
+        "tool_choice": null,
+        "n_tools": 0
+      },
+      "response": {
+        "content": "{\n  \"verdict\": \"fix_before_training\",\n  \"headline\": \"Dataset contains orphan label files, an empty label file, and numerous tiny boxes that require cleanup before training.\",\n  \"findings\": [\n    {\n      \"type\": \"orphan_label_file\",\n      \"severity\": \"major\",\n      \"files\": [\n        \"train/639462453486\",\n        \"train/915238652806\",\n        \"train/920332787315\"\n      ],\n      \"rationale\": \"The train split has 471 label files but only 468 images. The file listing shows 3 label files (639462453486, 915238652806, 920332787315) that do not have corresponding entries in the train image list, indicating orphaned labels.\"\n    },\n    {\n      \"type\": \"empty_label_file\",\n      \"severity\": \"minor\",\n      \"files\": [\n        \"train/000000145597\"\n      ],\n      \"rationale\": \"The label file for image 000000145597 is empty, meaning the image has no annotations. This is valid for negative samples but should be verified if the dataset expects all images to have objects.\"\n    },\n    {\n      \"type\": \"tiny_box\",\n      \"severity\": \"minor\",\n      \"files\": [\n        \"train/000000094751\",\n        \"train/000000361730\",\n        \"train/000000157756\",\n        \"train/000000540414\",\n        \"train/000000130386\",\n        \"train/000000575970\",\n        \"val/000000416451\",\n        \"train/000000447342\",\n        \"train/000000580410\",\n        \"train/000000204186\",\n        \"train/000000287874\"\n      ],\n      \"rationale\": \"Many label files contain boxes with very small widths and heights (e.g., < 0.02 or < 0.03 in normalized coordinates). These tiny boxes can destabilize training or be dropped by data augmentation, potentially leading to inconsistent learning.\"\n    }\n  ]\n}",
+        "tool_calls": [],
+        "finish_reason": "stop"
+      },
+      "reasoning": "",
+      "seconds": 47.96,
+      "prompt_tokens": 36171,
+      "completion_tokens": 627
+    }
+  ]
+}

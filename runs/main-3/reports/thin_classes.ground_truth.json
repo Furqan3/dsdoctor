@@ -1,0 +1,22 @@
+{
+  "seed": 108,
+  "recipe": {
+    "extreme_class_imbalance": 1,
+    "yaml_inconsistency": 1
+  },
+  "applied": {
+    "extreme_class_imbalance": 1,
+    "yaml_inconsistency": 1
+  },
+  "ground_truth": [
+    [
+      "extreme_class_imbalance",
+      "<dataset>"
+    ],
+    [
+      "yaml_inconsistency",
+      "<dataset>"
+    ]
+  ],
+  "collateral": []
+}

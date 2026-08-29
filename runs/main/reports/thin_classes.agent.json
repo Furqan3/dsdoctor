@@ -1,0 +1,37 @@
+{
+  "verdict": "fix_before_training",
+  "headline": "Fix the data.yaml class-count mismatch (nc=15 vs 12 names) before training, and decide what to do with 'bowl' (2 train instances, 0 in val); everything else in the dataset is clean.",
+  "training_impact": "Training will either crash (frameworks that validate names against nc) or, worse, silently run with 15 output channels where 3 are never labelled \u2014 your headline mAP is then averaged over 3 phantom classes and understated by ~20%, so the number you use to make the go/no-go decision is wrong. Separately, 'bowl' is unlearnable (2 train boxes) and unmeasurable (0 val boxes), so any per-class mAP for it is noise.",
+  "detectors_run": [
+    "structure_scan",
+    "image_integrity_scan",
+    "geometry_scan",
+    "normalisation_scan",
+    "class_scan",
+    "duplicate_scan"
+  ],
+  "suppressed": 0,
+  "reinstated": 0,
+  "swept_fallback": false,
+  "incomplete": "",
+  "decisions": [
+    {
+      "finding_id": "structure_scan:yaml_inconsistency:0",
+      "type": "yaml_inconsistency",
+      "action": "report",
+      "severity": "major",
+      "source": "agent",
+      "rationale": "data.yaml declares nc=15 but lists only 12 class names. One-line fix: set nc=12. Until then the run may crash on a names/nc validation, or it will train 3 dead channels and compute mAP over 15 classes, diluting the headline metric by ~20% and misaligning any class-name mapping in downstream tooling. Cheapest fix on the list and it directly corrupts the validation number, so it goes first.",
+      "files": 0
+    },
+    {
+      "finding_id": "class_scan:extreme_class_imbalance:0",
+      "type": "extreme_class_imbalance",
+      "action": "report",
+      "severity": "major",
+      "source": "agent",
+      "rationale": "'bowl' (id 6) has 2 instances in train and 0 in val \u2014 992x rarer than 'person'. It cannot be learned and its per-class mAP is undefined, which also skews any macro-averaged mAP. This is a data-coverage decision, not a file edit: drop the class, merge it into a parent class, or collect more bowl images before the next training run. All other 11 classes have healthy counts in both splits (worst case: 'truck' with 15 val instances).",
+      "files": 0
+    }
+  ]
+}

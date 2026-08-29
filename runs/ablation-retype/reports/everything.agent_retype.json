@@ -1,0 +1,145 @@
+{
+  "verdict": "blocked",
+  "headline": "Do not train yet. The dataset has multiple run-blocking defects (zero-area boxes, unparseable rows, out-of-range class ids, undecodable images, pixel-scale coordinates) and a train/val leak that would invalidate the validation number. Fix the blockers, re-split, then train.",
+  "training_impact": "As-is this will not train cleanly: zero-area boxes put a NaN in the loss, unparseable rows and out-of-range class ids abort or corrupt dataset verification, and two truncated images crash the dataloader mid-epoch. Even if you patched those, the 3 byte-identical train/val pairs mean the validation metric is optimistic by an unknown margin and cannot be used to compare checkpoints or decide readiness. The 2 pixel-scale label files would otherwise train the model to collapse boxes to the top-left corner.",
+  "detectors_run": [
+    "structure_scan",
+    "image_integrity_scan",
+    "geometry_scan",
+    "normalisation_scan",
+    "class_scan",
+    "duplicate_scan"
+  ],
+  "suppressed": 0,
+  "reinstated": 0,
+  "swept_fallback": false,
+  "incomplete": "",
+  "decisions": [
+    {
+      "finding_id": "retyped:0",
+      "type": "degenerate_box",
+      "action": "report",
+      "severity": "critical",
+      "source": "retyped",
+      "rationale": "Two boxes have w=0 (zero area). Zero-area boxes produce NaN in most IoU implementations, which propagates into the loss and kills the run. Both are in val, so they also corrupt the validation number. Drop these two rows.",
+      "files": 2
+    },
+    {
+      "finding_id": "retyped:1",
+      "type": "malformed_label_row",
+      "action": "report",
+      "severity": "critical",
+      "source": "retyped",
+      "rationale": "Each has a 6-field row (a trailing 0.87 that looks like a confidence value from a different export format). YOLO rows must be exactly 5 fields; depending on the loader this raises during verification or is silently skipped. One is in val. Delete or repair the offending rows.",
+      "files": 2
+    },
+    {
+      "finding_id": "retyped:2",
+      "type": "class_id_out_of_range",
+      "action": "report",
+      "severity": "critical",
+      "source": "retyped",
+      "rationale": "Class ids 13 and 15 are used, but data.yaml defines only 12 classes (0..11). Ultralytics raises on this during dataset verification; a hand-rolled loader indexes past the classification head mid-epoch. Remap or drop these two boxes.",
+      "files": 2
+    },
+    {
+      "finding_id": "retyped:3",
+      "type": "corrupt_image",
+      "action": "report",
+      "severity": "critical",
+      "source": "retyped",
+      "rationale": "Both JPEGs are truncated and cannot be decoded (OSError: image file is truncated). This aborts the epoch in most training loops, or is skipped with an easy-to-miss warning. Delete both images and their label files.",
+      "files": 2
+    },
+    {
+      "finding_id": "retyped:4",
+      "type": "denormalised_coords",
+      "action": "report",
+      "severity": "critical",
+      "source": "retyped",
+      "rationale": "These two files hold raw pixel coordinates, not normalised fractions (11/11 and 6/6 rows exceed 1.0, bounded by image dims 500x365 and 640x480). This is the same root cause as the out_of_bounds finding on these two files. Training on them makes boxes collapse to the top-left corner. Divide x/w and y/h by image width/height. Fixing this also clears the out-of-bounds boxes in these two files.",
+      "files": 2
+    },
+    {
+      "finding_id": "retyped:5",
+      "type": "out_of_bounds",
+      "action": "report",
+      "severity": "critical",
+      "source": "retyped",
+      "rationale": "Boxes in these three files fall outside the normalised [0,1] range (the other two out-of-bounds files, 000000016249 and 000000203294, are the denormalised-coords files above and are fixed by normalising). Where the loader clips, the box silently changes shape and the model trains against a target the annotator never drew. Clip or drop the offending boxes.",
+      "files": 3
+    },
+    {
+      "finding_id": "retyped:6",
+      "type": "train_val_leakage",
+      "action": "report",
+      "severity": "critical",
+      "source": "retyped",
+      "rationale": "Three val images are byte-identical (sha1-verified) to three train images. The model trains on content it is then scored on, so every validation metric is optimistic by an unknown margin and cannot be used to compare checkpoints or decide readiness. Re-split before training; fixing this after training means retraining. Remove the three val images (and their labels) from val.",
+      "files": 6
+    },
+    {
+      "finding_id": "retyped:7",
+      "type": "yaml_inconsistency",
+      "action": "report",
+      "severity": "major",
+      "source": "retyped",
+      "rationale": "data.yaml declares nc=15 but lists only 12 class names. The 12 names match the labels on disk, so set nc=12. (The out-of-range ids 13/15 are a separate defect, reported above.)",
+      "files": 0
+    },
+    {
+      "finding_id": "retyped:8",
+      "type": "missing_label_file",
+      "action": "report",
+      "severity": "major",
+      "source": "retyped",
+      "rationale": "Three train images have no label file. Ultralytics treats them as pure background; if they actually contain objects, the model is being explicitly taught those objects are background, suppressing recall. Confirm intent: create empty .txt files if they are true backgrounds, or annotate them.",
+      "files": 3
+    },
+    {
+      "finding_id": "retyped:9",
+      "type": "near_duplicate_image",
+      "action": "report",
+      "severity": "major",
+      "source": "retyped",
+      "rationale": "Three near-identical pairs inside train (perceptual distance 0/64). Duplicates over-weight whatever they contain and inflate the reported dataset size. Deduplicate.",
+      "files": 6
+    },
+    {
+      "finding_id": "retyped:10",
+      "type": "tiny_box",
+      "action": "report",
+      "severity": "major",
+      "source": "retyped",
+      "rationale": "Three boxes are 0.0005 x 0.0005 (area 2.5e-7), below the letterbox drop threshold. They are dropped during the dataloader, so they inflate the apparent annotation count while contributing nothing. Drop them.",
+      "files": 3
+    },
+    {
+      "finding_id": "retyped:11",
+      "type": "duplicate_annotation",
+      "action": "report",
+      "severity": "major",
+      "source": "retyped",
+      "rationale": "Each file lists the same box twice. Duplicates double-count in the loss and break the one-target-per-object assumption used by NMS-free matchers. Deduplicate.",
+      "files": 3
+    },
+    {
+      "finding_id": "retyped:12",
+      "type": "orphan_label_file",
+      "action": "report",
+      "severity": "minor",
+      "source": "retyped",
+      "rationale": "Two label files have no matching image; they are never read during training. Delete them.",
+      "files": 2
+    },
+    {
+      "finding_id": "retyped:13",
+      "type": "empty_label_file",
+      "action": "report",
+      "severity": "minor",
+      "source": "retyped",
+      "rationale": "Two label files contain zero boxes. Legitimate if they are intentional background images, but an unintended empty file is a silently dropped annotation. Confirm they are deliberate.",
+      "files": 2
+    }
+  ]
+}

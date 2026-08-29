@@ -1,0 +1,50 @@
+{
+  "agent": "baseline-single-prompt",
+  "model": "qwen3.8-27b",
+  "llm_calls": 1,
+  "tool_calls": 0,
+  "prompt_tokens": 36284,
+  "completion_tokens": 621,
+  "wall_seconds": 47.93,
+  "steps": [
+    {
+      "kind": "note",
+      "name": "note",
+      "request": null,
+      "response": {
+        "text": "baseline context: 52/608 label files, 25967 chars of label rows"
+      },
+      "reasoning": "",
+      "seconds": 0.0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0
+    },
+    {
+      "kind": "llm",
+      "name": "qwen3.8-27b",
+      "request": {
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are reviewing an object-detection dataset in YOLO format to decide whether it is safe to train on. Below is a summary of the dataset, the list of files in each split, and the raw label rows for a large sample of those files.\n\nReport every defect you can find. These are the defect types, use these exact type ids:\n\n  out_of_bounds - box coordinates fall outside the normalised [0,1] range\n  denormalised_coords - coordinates look like raw pixels, not normalised fractions\n  degenerate_box - box has zero or negative width/height\n  class_id_out_of_range - class id is >= the number of classes in data.yaml\n  corrupt_image - image file cannot be decoded\n  train_val_leakage - the same image content appears in both train and val\n  malformed_label_row - label row does not have 5 whitespace-separated fields\n  class_swap - a group of boxes carries a systematically wrong class id\n  duplicate_annotation - the same box is listed more than once in one label file\n  missing_label_file - image has no corresponding label file\n  near_duplicate_image - perceptually near-identical images inflate the dataset\n  tiny_box - box is small enough to be dropped or destabilise training\n  extreme_class_imbalance \n... [744 more chars]"
+          },
+          {
+            "role": "user",
+            "content": "## Dataset summary\n```json\n{\n  \"root\": \"/home/unk/projects/micro1-hackathon/dataset-doctor/data/cases/everything\",\n  \"nc\": 12,\n  \"names\": [\n    \"person\",\n    \"chair\",\n    \"car\",\n    \"dining table\",\n    \"cup\",\n    \"bottle\",\n    \"bowl\",\n    \"handbag\",\n    \"truck\",\n    \"bench\",\n    \"book\",\n    \"backpack\"\n  ],\n  \"splits\": {\n    \"train\": {\n      \"images\": 471,\n      \"label_files\": 470,\n      \"boxes\": 4924\n    },\n    \"val\": {\n      \"images\": 135,\n      \"label_files\": 135,\n      \"boxes\": 1852\n    }\n  },\n  \"total_boxes\": 6776,\n  \"class_counts\": {\n    \"person\": 2434,\n    \"chair\": 734,\n    \"car\": 635,\n    \"dining table\": 381,\n    \"cup\": 534,\n    \"bottle\": 455,\n    \"bowl\": 333,\n    \"handbag\": 297,\n    \"truck\": 217,\n    \"bench\": 209,\n    \"book\": 314,\n    \"backpack\": 231,\n    \"<id 13 not in data.yaml>\": 1,\n    \"<id 15 not in data.yaml>\": 1\n  },\n  \"yaml_error\": \"data.yaml declares nc=15 but lists 12 names\"\n}\n```\n\n## File listing\n```json\n{\n  \"train\": [\n    \"000000001000\",\n    \"000000001268\",\n    \"000000002685\",\n    \"000000006040\",\n    \"000000007088\",\n    \"000000011197\",\n    \"000000011511\",\n    \"000000012670\",\n    \"000000013729\",\n    \"000000016249\",\n    \"000000016451\",\n    \"000000017899\",\n    \"000\n... [37991 more chars]"
+          }
+        ],
+        "tool_choice": null,
+        "n_tools": 0
+      },
+      "response": {
+        "content": "```json\n{\n  \"verdict\": \"blocked\",\n  \"headline\": \"Dataset is blocked due to critical YAML inconsistencies, out-of-range class IDs, and a malformed label row that will cause training crashes or invalid model outputs.\",\n  \"findings\": [\n    {\n      \"type\": \"yaml_inconsistency\",\n      \"severity\": \"critical\",\n      \"files\": [\n        \"<dataset>\"\n      ],\n      \"rationale\": \"data.yaml declares nc=15 but only lists 12 class names. This mismatch will cause the training script to either crash or misinterpret class indices, as the number of classes defined in the config does not match the number of names provided.\"\n    },\n    {\n      \"type\": \"class_id_out_of_range\",\n      \"severity\": \"critical\",\n      \"files\": [\n        \"<dataset>\"\n      ],\n      \"rationale\": \"The class counts report instances for class IDs 13 and 15, which are not defined in the 12-class list (0-11). Even if nc were 15, the names list is incomplete. These boxes will be ignored or cause errors depending on the framework's handling of out-of-bounds class IDs.\"\n    },\n    {\n      \"type\": \"malformed_label_row\",\n      \"severity\": \"critical\",\n      \"files\": [\n        \"val/000000440475\"\n      ],\n      \"rationale\": \"The last line of this label file contains 6 fields: '10 0.32188300 0.54416900 0.01401600 0.04786800 0.87'. YOLO format requires exactly 5 fields (class, x, y, w, h). This will cause a parsing error during data loading.\"\n    },\n    {\n      \"type\": \"missing_label_file\",\n      \"severity\": \"major\",\n      \"files\": [\n        \"train\"\n      ],\n      \"rationale\": \"The summary indicates 471 images in the train split but only 470 label files. One image lacks a corresponding label file, which may cause the training pipeline to skip it or crash if strict pairing is enforced.\"\n    },\n    {\n      \"type\": \"empty_label_file\",\n      \"severity\": \"minor\",\n      \"files\": [\n        \"train/000000127270\"\n      ],\n      \"rationale\": \"This label file is empty. While valid in YOLO (indicating no objects), it contributes to the count discrepancy if the image was expected to have annotations, or it may be a placeholder for a corrupted image.\"\n    }\n  ]\n}\n```",
+        "tool_calls": [],
+        "finish_reason": "stop"
+      },
+      "reasoning": "",
+      "seconds": 47.93,
+      "prompt_tokens": 36284,
+      "completion_tokens": 621
+    }
+  ]
+}

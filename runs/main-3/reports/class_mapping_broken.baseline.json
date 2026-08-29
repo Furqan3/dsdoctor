@@ -1,0 +1,76 @@
+{
+  "verdict": "fix_before_training",
+  "headline": "The dataset contains class IDs (13 and 15) that are not defined in the data.yaml file, which will cause training to fail or produce incorrect results.",
+  "findings": [
+    {
+      "type": "class_id_out_of_range",
+      "severity": "critical",
+      "files": [
+        "<dataset>"
+      ],
+      "rationale": "The dataset summary reports 2 instances of class ID 13 and 2 instances of class ID 15. The data.yaml defines only 12 classes (IDs 0-11). These out-of-range IDs will cause errors in most YOLO training frameworks or be silently ignored, leading to data loss."
+    },
+    {
+      "type": "yaml_inconsistency",
+      "severity": "major",
+      "files": [
+        "<dataset>"
+      ],
+      "rationale": "The class counts in the summary include classes (13, 15) that do not exist in the 'names' list of data.yaml. This indicates a mismatch between the label files and the configuration file."
+    }
+  ],
+  "_files_shown": [
+    "train/000000577932",
+    "train/000000447342",
+    "train/000000172648",
+    "train/000000463527",
+    "val/000000018150",
+    "train/000000349480",
+    "val/000000572462",
+    "val/000000264535",
+    "train/000000355325",
+    "train/000000074256",
+    "train/000000482436",
+    "val/000000384527",
+    "train/000000210520",
+    "train/000000127270",
+    "train/000000094751",
+    "train/000000287874",
+    "train/000000186980",
+    "train/000000546626",
+    "train/000000500613",
+    "train/000000057672",
+    "val/000000289938",
+    "train/000000506707",
+    "train/000000030828",
+    "train/000000345356",
+    "train/000000530061",
+    "train/000000303713",
+    "train/000000350003",
+    "val/000000387098",
+    "val/000000171190",
+    "val/000000172595",
+    "train/000000563267",
+    "train/000000271116",
+    "val/000000569030",
+    "val/000000116208",
+    "train/000000461751",
+    "train/000000166166",
+    "train/000000193926",
+    "train/000000036936",
+    "train/000000300276",
+    "train/000000173004",
+    "val/000000278463",
+    "train/000000253742",
+    "train/000000336232",
+    "train/000000074058",
+    "train/000000156076",
+    "train/000000300039",
+    "train/000000448410",
+    "train/000000277020",
+    "train/000000491213",
+    "val/000000565853",
+    "train/000000511076",
+    "train/000000528399"
+  ]
+}

@@ -1,0 +1,289 @@
+{
+  "findings": [
+    {
+      "type": "class_swap",
+      "title": "37 box(es) labelled 'truck' look like 'car'",
+      "detail": "A confident reference detector disagrees with the stored class on 37 well-localised boxes across 32 file(s), always in the same direction ('truck' -> 'car'). A one-directional pattern at this scale is an export or annotation-tool mapping error rather than annotator noise. Confirm against a handful of images before remapping.",
+      "detector": "model_disagreement_scan",
+      "items": [
+        "train/000000026204",
+        "train/000000067616",
+        "train/000000085376",
+        "train/000000100274",
+        "train/000000122166",
+        "train/000000124798",
+        "train/000000142472",
+        "train/000000142585",
+        "train/000000147725",
+        "train/000000157756",
+        "train/000000166391",
+        "train/000000200961",
+        "train/000000203294",
+        "train/000000215723",
+        "train/000000221754",
+        "train/000000242411",
+        "train/000000254814",
+        "train/000000255917",
+        "train/000000287291",
+        "train/000000290248",
+        "train/000000310072",
+        "train/000000367680",
+        "train/000000418696",
+        "train/000000421455",
+        "train/000000460147",
+        "train/000000476704",
+        "train/000000478721",
+        "train/000000495146",
+        "train/000000498286",
+        "train/000000512564",
+        "val/000000515025",
+        "val/000000569030"
+      ],
+      "evidence": [
+        "train/000000026204 line 10: labelled 'truck' but the reference detector says 'car' at conf 0.57 (IoU 0.84)",
+        "train/000000067616 line 7: labelled 'truck' but the reference detector says 'car' at conf 0.62 (IoU 0.95)",
+        "train/000000085376 line 9: labelled 'truck' but the reference detector says 'car' at conf 0.56 (IoU 0.83)",
+        "train/000000085376 line 10: labelled 'truck' but the reference detector says 'car' at conf 0.85 (IoU 0.95)",
+        "train/000000100274 line 4: labelled 'truck' but the reference detector says 'car' at conf 0.76 (IoU 0.67)",
+        "train/000000122166 line 17: labelled 'truck' but the reference detector says 'car' at conf 0.83 (IoU 0.95)",
+        "train/000000122166 line 18: labelled 'truck' but the reference detector says 'car' at conf 0.79 (IoU 0.86)",
+        "train/000000124798 line 6: labelled 'truck' but the reference detector says 'car' at conf 0.59 (IoU 0.96)",
+        "train/000000142472 line 10: labelled 'truck' but the reference detector says 'car' at conf 0.68 (IoU 0.95)",
+        "train/000000142585 line 7: labelled 'truck' but the reference detector says 'car' at conf 0.81 (IoU 0.89)",
+        "train/000000147725 line 4: labelled 'truck' but the reference detector says 'car' at conf 0.81 (IoU 0.96)",
+        "train/000000157756 line 10: labelled 'truck' but the reference detector says 'car' at conf 0.56 (IoU 0.71)"
+      ],
+      "severity": "major",
+      "fix": {
+        "action": "review_class_remap",
+        "targets": [
+          "train/000000026204",
+          "train/000000067616",
+          "train/000000085376",
+          "train/000000100274",
+          "train/000000122166",
+          "train/000000124798",
+          "train/000000142472",
+          "train/000000142585",
+          "train/000000147725",
+          "train/000000157756",
+          "train/000000166391",
+          "train/000000200961",
+          "train/000000203294",
+          "train/000000215723",
+          "train/000000221754",
+          "train/000000242411",
+          "train/000000254814",
+          "train/000000255917",
+          "train/000000287291",
+          "train/000000290248",
+          "train/000000310072",
+          "train/000000367680",
+          "train/000000418696",
+          "train/000000421455",
+          "train/000000460147",
+          "train/000000476704",
+          "train/000000478721",
+          "train/000000495146",
+          "train/000000498286",
+          "train/000000512564",
+          "val/000000515025",
+          "val/000000569030"
+        ],
+        "from": "truck",
+        "to": "car"
+      },
+      "verified": null,
+      "verifier_note": ""
+    },
+    {
+      "type": "class_swap",
+      "title": "7 box(es) labelled 'cup' look like 'bowl'",
+      "detail": "A confident reference detector disagrees with the stored class on 7 well-localised boxes across 7 file(s), always in the same direction ('cup' -> 'bowl'). A one-directional pattern at this scale is an export or annotation-tool mapping error rather than annotator noise. Confirm against a handful of images before remapping.",
+      "detector": "model_disagreement_scan",
+      "items": [
+        "train/000000070048",
+        "train/000000182611",
+        "train/000000183965",
+        "train/000000231097",
+        "train/000000286908",
+        "train/000000488673",
+        "val/000000009590"
+      ],
+      "evidence": [
+        "train/000000070048 line 3: labelled 'cup' but the reference detector says 'bowl' at conf 0.88 (IoU 0.98)",
+        "train/000000182611 line 18: labelled 'cup' but the reference detector says 'bowl' at conf 0.91 (IoU 0.84)",
+        "train/000000183965 line 1: labelled 'cup' but the reference detector says 'bowl' at conf 0.65 (IoU 0.90)",
+        "train/000000231097 line 2: labelled 'cup' but the reference detector says 'bowl' at conf 0.61 (IoU 0.93)",
+        "train/000000286908 line 16: labelled 'cup' but the reference detector says 'bowl' at conf 0.58 (IoU 0.90)",
+        "train/000000488673 line 6: labelled 'cup' but the reference detector says 'bowl' at conf 0.65 (IoU 0.74)",
+        "val/000000009590 line 20: labelled 'cup' but the reference detector says 'bowl' at conf 0.74 (IoU 0.91)"
+      ],
+      "severity": "major",
+      "fix": {
+        "action": "review_class_remap",
+        "targets": [
+          "train/000000070048",
+          "train/000000182611",
+          "train/000000183965",
+          "train/000000231097",
+          "train/000000286908",
+          "train/000000488673",
+          "val/000000009590"
+        ],
+        "from": "cup",
+        "to": "bowl"
+      },
+      "verified": null,
+      "verifier_note": ""
+    },
+    {
+      "type": "class_swap",
+      "title": "6 box(es) labelled 'car' look like 'truck'",
+      "detail": "A confident reference detector disagrees with the stored class on 6 well-localised boxes across 6 file(s), always in the same direction ('car' -> 'truck'). A one-directional pattern at this scale is an export or annotation-tool mapping error rather than annotator noise. Confirm against a handful of images before remapping.",
+      "detector": "model_disagreement_scan",
+      "items": [
+        "train/000000346232",
+        "train/000000369812",
+        "train/000000436883",
+        "train/000000442456",
+        "train/000000491213",
+        "train/000000500613"
+      ],
+      "evidence": [
+        "train/000000346232 line 2: labelled 'car' but the reference detector says 'truck' at conf 0.73 (IoU 0.65)",
+        "train/000000369812 line 4: labelled 'car' but the reference detector says 'truck' at conf 0.75 (IoU 0.94)",
+        "train/000000436883 line 1: labelled 'car' but the reference detector says 'truck' at conf 0.71 (IoU 0.96)",
+        "train/000000442456 line 1: labelled 'car' but the reference detector says 'truck' at conf 0.70 (IoU 0.95)",
+        "train/000000491213 line 1: labelled 'car' but the reference detector says 'truck' at conf 0.56 (IoU 0.94)",
+        "train/000000500613 line 1: labelled 'car' but the reference detector says 'truck' at conf 0.59 (IoU 0.74)"
+      ],
+      "severity": "major",
+      "fix": {
+        "action": "review_class_remap",
+        "targets": [
+          "train/000000346232",
+          "train/000000369812",
+          "train/000000436883",
+          "train/000000442456",
+          "train/000000491213",
+          "train/000000500613"
+        ],
+        "from": "car",
+        "to": "truck"
+      },
+      "verified": null,
+      "verifier_note": ""
+    },
+    {
+      "type": "class_swap",
+      "title": "4 box(es) labelled 'bowl' look like 'cup'",
+      "detail": "A confident reference detector disagrees with the stored class on 4 well-localised boxes across 4 file(s), always in the same direction ('bowl' -> 'cup'). A one-directional pattern at this scale is an export or annotation-tool mapping error rather than annotator noise. Confirm against a handful of images before remapping.",
+      "detector": "model_disagreement_scan",
+      "items": [
+        "train/000000277020",
+        "train/000000368752",
+        "train/000000528399",
+        "train/000000551822"
+      ],
+      "evidence": [
+        "train/000000277020 line 5: labelled 'bowl' but the reference detector says 'cup' at conf 0.58 (IoU 0.82)",
+        "train/000000368752 line 5: labelled 'bowl' but the reference detector says 'cup' at conf 0.57 (IoU 0.93)",
+        "train/000000528399 line 5: labelled 'bowl' but the reference detector says 'cup' at conf 0.75 (IoU 0.91)",
+        "train/000000551822 line 1: labelled 'bowl' but the reference detector says 'cup' at conf 0.60 (IoU 0.96)"
+      ],
+      "severity": "major",
+      "fix": {
+        "action": "review_class_remap",
+        "targets": [
+          "train/000000277020",
+          "train/000000368752",
+          "train/000000528399",
+          "train/000000551822"
+        ],
+        "from": "bowl",
+        "to": "cup"
+      },
+      "verified": null,
+      "verifier_note": ""
+    },
+    {
+      "type": "class_swap",
+      "title": "2 box(es) labelled 'handbag' look like 'backpack'",
+      "detail": "A confident reference detector disagrees with the stored class on 2 well-localised boxes across 2 file(s), always in the same direction ('handbag' -> 'backpack'). A one-directional pattern at this scale is an export or annotation-tool mapping error rather than annotator noise. Confirm against a handful of images before remapping.",
+      "detector": "model_disagreement_scan",
+      "items": [
+        "train/000000171382",
+        "val/000000035279"
+      ],
+      "evidence": [
+        "train/000000171382 line 20: labelled 'handbag' but the reference detector says 'backpack' at conf 0.65 (IoU 0.82)",
+        "val/000000035279 line 3: labelled 'handbag' but the reference detector says 'backpack' at conf 0.58 (IoU 0.96)"
+      ],
+      "severity": "major",
+      "fix": {
+        "action": "review_class_remap",
+        "targets": [
+          "train/000000171382",
+          "val/000000035279"
+        ],
+        "from": "handbag",
+        "to": "backpack"
+      },
+      "verified": null,
+      "verifier_note": ""
+    },
+    {
+      "type": "class_swap",
+      "title": "2 box(es) labelled 'bench' look like 'person'",
+      "detail": "A confident reference detector disagrees with the stored class on 2 well-localised boxes across 2 file(s), always in the same direction ('bench' -> 'person'). A one-directional pattern at this scale is an export or annotation-tool mapping error rather than annotator noise. Confirm against a handful of images before remapping.",
+      "detector": "model_disagreement_scan",
+      "items": [
+        "train/000000227478",
+        "train/000000273132"
+      ],
+      "evidence": [
+        "train/000000227478 line 4: labelled 'bench' but the reference detector says 'person' at conf 0.81 (IoU 0.67)",
+        "train/000000273132 line 2: labelled 'bench' but the reference detector says 'person' at conf 0.79 (IoU 0.60)"
+      ],
+      "severity": "major",
+      "fix": {
+        "action": "review_class_remap",
+        "targets": [
+          "train/000000227478",
+          "train/000000273132"
+        ],
+        "from": "bench",
+        "to": "person"
+      },
+      "verified": null,
+      "verifier_note": ""
+    },
+    {
+      "type": "class_swap",
+      "title": "2 box(es) labelled 'backpack' look like 'person'",
+      "detail": "A confident reference detector disagrees with the stored class on 2 well-localised boxes across 2 file(s), always in the same direction ('backpack' -> 'person'). A one-directional pattern at this scale is an export or annotation-tool mapping error rather than annotator noise. Confirm against a handful of images before remapping.",
+      "detector": "model_disagreement_scan",
+      "items": [
+        "val/000000253835",
+        "val/000000572462"
+      ],
+      "evidence": [
+        "val/000000253835 line 4: labelled 'backpack' but the reference detector says 'person' at conf 0.74 (IoU 0.77)",
+        "val/000000572462 line 5: labelled 'backpack' but the reference detector says 'person' at conf 0.73 (IoU 0.61)"
+      ],
+      "severity": "major",
+      "fix": {
+        "action": "review_class_remap",
+        "targets": [
+          "val/000000253835",
+          "val/000000572462"
+        ],
+        "from": "backpack",
+        "to": "person"
+      },
+      "verified": null,
+      "verifier_note": ""
+    }
+  ]
+}

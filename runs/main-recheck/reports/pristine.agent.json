@@ -1,0 +1,18 @@
+{
+  "verdict": "usable_with_caveats",
+  "headline": "Dataset is clean: all exact checks (structure, image integrity, box geometry, normalisation, class IDs, train/val leakage) passed with zero findings \u2014 safe to train on today.",
+  "training_impact": "Training will run and the validation number will be trustworthy: no corrupt images, no malformed or out-of-bounds/degenerate boxes, no denormalised coordinates, no class-ID errors, and no train/val leakage. The only caveat is class skew (person ~1983 train instances vs truck 201 / bench 185 / backpack 196), which will bias mAP toward frequent classes; consider per-class weighting or augmentation for the rare classes if they matter to your metric.",
+  "detectors_run": [
+    "structure_scan",
+    "image_integrity_scan",
+    "geometry_scan",
+    "normalisation_scan",
+    "class_scan",
+    "duplicate_scan"
+  ],
+  "suppressed": 0,
+  "reinstated": 0,
+  "swept_fallback": false,
+  "incomplete": "",
+  "decisions": []
+}

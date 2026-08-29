@@ -1,0 +1,78 @@
+{
+  "verdict": "fix_before_training",
+  "headline": "Dataset contains critical train/val leakage and near-duplicate images that invalidate evaluation metrics.",
+  "findings": [
+    {
+      "type": "train_val_leakage",
+      "severity": "critical",
+      "files": [
+        "train/000000303566",
+        "val/000000303566"
+      ],
+      "rationale": "The image ID 000000303566 appears in both the train and val file lists. This means the model is being evaluated on data it has already seen during training, leading to artificially high performance metrics that do not reflect real-world generalization."
+    },
+    {
+      "type": "near_duplicate_image",
+      "severity": "major",
+      "files": [
+        "train/000000303566",
+        "val/000000303566"
+      ],
+      "rationale": "The presence of the same image ID in both splits suggests either a hard duplicate or a near-duplicate that was not properly separated. This inflates the dataset size and biases the model towards specific instances."
+    }
+  ],
+  "_files_shown": [
+    "train/000000296649",
+    "train/000000300276",
+    "val/000000024610",
+    "train/000000057672",
+    "train/000000204186",
+    "val/000000393569",
+    "train/000000419312",
+    "train/000000473869",
+    "train/000000094751",
+    "val/000000294783",
+    "train/000000085157",
+    "train/000000361238",
+    "train/000000248314",
+    "train/000000180751",
+    "train/000000157756",
+    "train/000000572678",
+    "train/000000546626",
+    "train/000000130386",
+    "val/000000536947",
+    "val/000000397354",
+    "train/000000567197",
+    "train/000000548780",
+    "train/000000211120",
+    "val/438274936455",
+    "train/000000459153",
+    "train/000000308430",
+    "train/000000577932",
+    "train/000000345466",
+    "train/000000298396",
+    "train/000000030828",
+    "train/000000193926",
+    "train/000000465129",
+    "train/000000242934",
+    "train/000000253742",
+    "val/000000448256",
+    "train/000000336053",
+    "train/000000514586",
+    "train/000000190923",
+    "train/000000476119",
+    "train/000000410880",
+    "train/000000476704",
+    "train/000000036936",
+    "train/000000171382",
+    "val/000000275198",
+    "val/000000054593",
+    "val/000000388258",
+    "val/000000290771",
+    "train/000000191013",
+    "train/000000074256",
+    "train/000000074058",
+    "train/000000540502",
+    "train/000000172648"
+  ]
+}

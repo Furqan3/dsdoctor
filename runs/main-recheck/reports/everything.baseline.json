@@ -1,0 +1,100 @@
+{
+  "verdict": "blocked",
+  "headline": "Dataset is blocked due to critical YAML inconsistencies, out-of-range class IDs, and a malformed label row that will cause training crashes or invalid model outputs.",
+  "findings": [
+    {
+      "type": "yaml_inconsistency",
+      "severity": "critical",
+      "files": [
+        "<dataset>"
+      ],
+      "rationale": "data.yaml declares nc=15 but only lists 12 class names. This mismatch will cause the training script to either crash or misinterpret class indices, as the number of classes defined in the config does not match the number of names provided."
+    },
+    {
+      "type": "class_id_out_of_range",
+      "severity": "critical",
+      "files": [
+        "<dataset>"
+      ],
+      "rationale": "The class counts report instances for class IDs 13 and 15, which are not defined in the 12-class list (0-11). Even if nc were 15, the names list is incomplete. These boxes will be ignored or cause errors depending on the framework's handling of out-of-bounds class IDs."
+    },
+    {
+      "type": "malformed_label_row",
+      "severity": "critical",
+      "files": [
+        "val/000000440475"
+      ],
+      "rationale": "The last line of this label file contains 6 fields: '10 0.32188300 0.54416900 0.01401600 0.04786800 0.87'. YOLO format requires exactly 5 fields (class, x, y, w, h). This will cause a parsing error during data loading."
+    },
+    {
+      "type": "missing_label_file",
+      "severity": "major",
+      "files": [
+        "train"
+      ],
+      "rationale": "The summary indicates 471 images in the train split but only 470 label files. One image lacks a corresponding label file, which may cause the training pipeline to skip it or crash if strict pairing is enforced."
+    },
+    {
+      "type": "empty_label_file",
+      "severity": "minor",
+      "files": [
+        "train/000000127270"
+      ],
+      "rationale": "This label file is empty. While valid in YOLO (indicating no objects), it contributes to the count discrepancy if the image was expected to have annotations, or it may be a placeholder for a corrupted image."
+    }
+  ],
+  "_files_shown": [
+    "train/000000296649",
+    "train/000000300276",
+    "val/000000014038",
+    "train/000000057672",
+    "train/000000204186",
+    "val/000000387098",
+    "train/000000419312",
+    "train/000000473869",
+    "train/000000094751",
+    "val/000000290771",
+    "train/000000085157",
+    "train/000000361238",
+    "train/000000248314",
+    "train/000000180751",
+    "train/000000157756",
+    "train/000000572678",
+    "train/000000546626",
+    "train/000000130386",
+    "val/000000515025",
+    "val/000000388258",
+    "train/000000567197",
+    "train/000000548780",
+    "train/000000211120",
+    "val/725460290497",
+    "train/000000459153",
+    "train/000000308430",
+    "train/000000577932",
+    "train/000000345466",
+    "train/000000298396",
+    "train/000000030828",
+    "train/000000193926",
+    "train/000000465129",
+    "train/000000242934",
+    "train/000000253742",
+    "val/000000440475",
+    "train/000000336053",
+    "train/000000514586",
+    "train/000000190923",
+    "train/000000476119",
+    "train/000000410880",
+    "train/000000476704",
+    "train/000000036936",
+    "train/000000171382",
+    "val/000000233238",
+    "val/000000045229",
+    "val/000000384527",
+    "val/000000286182",
+    "train/000000191013",
+    "train/000000074256",
+    "train/000000540502",
+    "train/000000127270",
+    "train/454315123240"
+  ]
+}

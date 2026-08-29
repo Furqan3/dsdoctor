@@ -1,0 +1,50 @@
+{
+  "agent": "baseline-single-prompt",
+  "model": "qwen3.8-27b",
+  "llm_calls": 1,
+  "tool_calls": 0,
+  "prompt_tokens": 36172,
+  "completion_tokens": 1262,
+  "wall_seconds": 62.83,
+  "steps": [
+    {
+      "kind": "note",
+      "name": "note",
+      "request": null,
+      "response": {
+        "text": "baseline context: 49/603 label files, 25956 chars of label rows"
+      },
+      "reasoning": "",
+      "seconds": 0.0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0
+    },
+    {
+      "kind": "llm",
+      "name": "qwen3.8-27b",
+      "request": {
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are reviewing an object-detection dataset in YOLO format to decide whether it is safe to train on. Below is a summary of the dataset, the list of files in each split, and the raw label rows for a large sample of those files.\n\nReport every defect you can find. These are the defect types, use these exact type ids:\n\n  out_of_bounds - box coordinates fall outside the normalised [0,1] range\n  denormalised_coords - coordinates look like raw pixels, not normalised fractions\n  degenerate_box - box has zero or negative width/height\n  class_id_out_of_range - class id is >= the number of classes in data.yaml\n  corrupt_image - image file cannot be decoded\n  train_val_leakage - the same image content appears in both train and val\n  malformed_label_row - label row does not have 5 whitespace-separated fields\n  class_swap - a group of boxes carries a systematically wrong class id\n  duplicate_annotation - the same box is listed more than once in one label file\n  missing_label_file - image has no corresponding label file\n  near_duplicate_image - perceptually near-identical images inflate the dataset\n  tiny_box - box is small enough to be dropped or destabilise training\n  extreme_class_imbalance \n... [744 more chars]"
+          },
+          {
+            "role": "user",
+            "content": "## Dataset summary\n```json\n{\n  \"root\": \"/home/unk/projects/micro1-hackathon/dataset-doctor/data/cases/subtle_leak\",\n  \"nc\": 12,\n  \"names\": [\n    \"person\",\n    \"chair\",\n    \"car\",\n    \"dining table\",\n    \"cup\",\n    \"bottle\",\n    \"bowl\",\n    \"handbag\",\n    \"truck\",\n    \"bench\",\n    \"book\",\n    \"backpack\"\n  ],\n  \"splits\": {\n    \"train\": {\n      \"images\": 468,\n      \"label_files\": 468,\n      \"boxes\": 4940\n    },\n    \"val\": {\n      \"images\": 135,\n      \"label_files\": 135,\n      \"boxes\": 1871\n    }\n  },\n  \"total_boxes\": 6811,\n  \"class_counts\": {\n    \"person\": 2468,\n    \"chair\": 732,\n    \"car\": 642,\n    \"dining table\": 381,\n    \"cup\": 535,\n    \"bottle\": 455,\n    \"bowl\": 332,\n    \"handbag\": 299,\n    \"truck\": 221,\n    \"bench\": 210,\n    \"book\": 301,\n    \"backpack\": 235\n  },\n  \"yaml_error\": null\n}\n```\n\n## File listing\n```json\n{\n  \"train\": [\n    \"000000001000\",\n    \"000000001268\",\n    \"000000002685\",\n    \"000000006040\",\n    \"000000007088\",\n    \"000000011197\",\n    \"000000011511\",\n    \"000000012670\",\n    \"000000013729\",\n    \"000000016249\",\n    \"000000016451\",\n    \"000000017899\",\n    \"000000018380\",\n    \"000000018575\",\n    \"000000018837\",\n    \"000000025181\",\n    \"000000026204\",\n    \"000000030828\"\n... [37767 more chars]"
+          }
+        ],
+        "tool_choice": null,
+        "n_tools": 0
+      },
+      "response": {
+        "content": "{\n  \"verdict\": \"fix_before_training\",\n  \"headline\": \"Dataset contains critical train/val leakage via duplicate image content and near-duplicates, along with minor coordinate anomalies.\",\n  \"findings\": [\n    {\n      \"type\": \"train_val_leakage\",\n      \"severity\": \"critical\",\n      \"files\": [\n        \"train/000000363840\",\n        \"val/000000363840\"\n      ],\n      \"rationale\": \"The file ID '000000363840' appears in both the train and val splits. In YOLO datasets, identical filenames across splits typically indicate the same image content is used for both training and validation, leading to data leakage and inflated performance metrics.\"\n    },\n    {\n      \"type\": \"near_duplicate_image\",\n      \"severity\": \"major\",\n      \"files\": [\n        \"train/000000363840\",\n        \"val/000000363840\"\n      ],\n      \"rationale\": \"The presence of the same image ID in both splits suggests near-duplicate or identical images, which inflates the dataset size and biases the model towards specific samples.\"\n    },\n    {\n      \"type\": \"out_of_bounds\",\n      \"severity\": \"minor\",\n      \"files\": [\n        \"train/000000468332\"\n      ],\n      \"rationale\": \"The box '3 0.37535900 0.95217000 0.74753000 0.09566000' has a bottom-right y-coordinate of 0.95217 + 0.09566 = 1.04783, which exceeds the normalized [0,1] range. While some frameworks clip these, it is technically out of bounds.\"\n    },\n    {\n      \"type\": \"out_of_bounds\",\n      \"severity\": \"minor\",\n      \"files\": [\n        \"train/000000180751\"\n      ],\n      \"rationale\": \"The box '3 0.50486700 0.61429200 0.99026600 0.74545800' has a bottom-right y-coordinate of 0.614292 + 0.745458 = 1.35975, which is significantly out of the [0,1] range.\"\n    },\n    {\n      \"type\": \"out_of_bounds\",\n      \"severity\": \"minor\",\n      \"files\": [\n        \"train/000000345356\"\n      ],\n      \"rationale\": \"The box '3 0.49968000 0.89610400 0.99545400 0.18183200' has a bottom-right y-coordinate of 0.896104 + 0.181832 = 1.077936, which exceeds the [0,1] range.\"\n    },\n    {\n      \"type\": \"out_of_bounds\",\n      \"severity\": \"minor\",\n      \"files\": [\n        \"train/000000355325\"\n      ],\n      \"rationale\": \"The box '3 0.50000000 0.74943700 1.00000000 0.47415600' has a bottom-right y-coordinate of 0.749437 + 0.474156 = 1.223593, which exceeds the [0,1] range.\"\n    },\n    {\n      \"type\": \"out_of_bounds\",\n      \"severity\": \"minor\",\n      \"files\": [\n        \"train/000000461751\"\n      ],\n      \"rationale\": \"The box '2 0.50300000 0.36405100 0.99400000 0.61572800' has a bottom-right y-coordinate of 0.364051 + 0.615728 = 0.979779 (within range) but the right x-coordinate is 0.503 + 0.994 = 1.497, which is out of bounds.\"\n    },\n    {\n      \"type\": \"out_of_bounds\",\n      \"severity\": \"minor\",\n      \"files\": [\n        \"val/000000356424\"\n      ],\n      \"rationale\": \"The box '3 0.50300000 0.79565650 0.99400000 0.38203100' has a bottom-right y-coordinate of 0.7956565 + 0.382031 = 1.1776875, which exceeds the [0,1] range.\"\n    }\n  ]\n}",
+        "tool_calls": [],
+        "finish_reason": "stop"
+      },
+      "reasoning": "",
+      "seconds": 62.83,
+      "prompt_tokens": 36172,
+      "completion_tokens": 1262
+    }
+  ]
+}

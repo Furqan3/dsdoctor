@@ -1,0 +1,28 @@
+[project]
+name = "dsdoctor"
+version = "0.5.0"
+description = "Trainability audit for object-detection datasets, driven by an agent over deterministic detectors."
+requires-python = ">=3.10"
+dependencies = [
+    "openai>=1.40",
+    "numpy>=1.24",
+    "pillow>=10.0",
+    "pyyaml>=6.0",
+    "rich>=13.0",
+    "jinja2>=3.1",
+    "tqdm>=4.66",
+]
+
+[project.optional-dependencies]
+vision = ["ultralytics>=8.2"]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+dsdoctor = "dsdoctor.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]

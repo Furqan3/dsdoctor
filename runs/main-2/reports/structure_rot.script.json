@@ -1,0 +1,91 @@
+{
+  "findings": [
+    {
+      "type": "missing_label_file",
+      "title": "5 image(s) have no label file",
+      "detail": "Ultralytics treats an image with no .txt as a pure background image. If these are actually unlabelled foreground images the model is being explicitly taught that the objects in them are background, which suppresses recall for those classes.",
+      "detector": "structure_scan",
+      "items": [
+        "train/000000006040",
+        "train/000000226147",
+        "train/000000322610",
+        "val/000000223182",
+        "val/000000549220"
+      ],
+      "evidence": [
+        "no labels/train/000000006040.txt",
+        "no labels/train/000000226147.txt",
+        "no labels/train/000000322610.txt",
+        "no labels/val/000000223182.txt",
+        "no labels/val/000000549220.txt"
+      ],
+      "severity": "major",
+      "fix": {
+        "action": "create_empty_or_annotate",
+        "targets": [
+          "train/000000006040",
+          "train/000000226147",
+          "train/000000322610",
+          "val/000000223182",
+          "val/000000549220"
+        ]
+      },
+      "verified": null,
+      "verifier_note": ""
+    },
+    {
+      "type": "empty_label_file",
+      "title": "3 label file(s) contain no boxes",
+      "detail": "Intentional background images are a legitimate technique, but an unintended empty file is a silently dropped annotation. Confirm these are deliberate.",
+      "detector": "structure_scan",
+      "items": [
+        "train/000000211120",
+        "train/000000242934",
+        "train/000000368335"
+      ],
+      "evidence": [
+        "0 rows in train/000000211120.txt",
+        "0 rows in train/000000242934.txt",
+        "0 rows in train/000000368335.txt"
+      ],
+      "severity": "minor",
+      "fix": {
+        "action": "review_background_images",
+        "targets": [
+          "train/000000211120",
+          "train/000000242934",
+          "train/000000368335"
+        ]
+      },
+      "verified": null,
+      "verifier_note": ""
+    },
+    {
+      "type": "orphan_label_file",
+      "title": "3 label file(s) have no image",
+      "detail": "These labels are never read during training. Usually the remains of a deleted or renamed image.",
+      "detector": "structure_scan",
+      "items": [
+        "train/398764888884",
+        "train/531232685887",
+        "train/654553082395"
+      ],
+      "evidence": [
+        "labels present, image absent: train/398764888884",
+        "labels present, image absent: train/531232685887",
+        "labels present, image absent: train/654553082395"
+      ],
+      "severity": "minor",
+      "fix": {
+        "action": "delete_orphan_labels",
+        "targets": [
+          "train/398764888884",
+          "train/531232685887",
+          "train/654553082395"
+        ]
+      },
+      "verified": null,
+      "verifier_note": ""
+    }
+  ]
+}

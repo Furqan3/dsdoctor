@@ -1,0 +1,36 @@
+{
+  "seed": 102,
+  "recipe": {
+    "train_val_leakage": 3
+  },
+  "applied": {
+    "train_val_leakage": 6
+  },
+  "ground_truth": [
+    [
+      "train_val_leakage",
+      "train/000000221754"
+    ],
+    [
+      "train_val_leakage",
+      "train/000000277005"
+    ],
+    [
+      "train_val_leakage",
+      "train/000000336232"
+    ],
+    [
+      "train_val_leakage",
+      "val/218885329401"
+    ],
+    [
+      "train_val_leakage",
+      "val/706346898744"
+    ],
+    [
+      "train_val_leakage",
+      "val/916278631571"
+    ]
+  ],
+  "collateral": []
+}

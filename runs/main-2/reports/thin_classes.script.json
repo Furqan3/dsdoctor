@@ -1,0 +1,41 @@
+{
+  "findings": [
+    {
+      "type": "extreme_class_imbalance",
+      "title": "1 class(es) have too few instances to train or validate",
+      "detail": "Under-represented classes do not simply score badly, they make the headline mAP misleading: a class with two validation instances moves the average by whole points on a single detection. Decide up front whether to merge, drop or collect more of these.",
+      "detector": "class_scan",
+      "items": [],
+      "evidence": [
+        "'bowl' (id 6): only 2 instances in train; 992x rarer than the most common class; only 0 instances in val, so its per-class mAP is not meaningful"
+      ],
+      "severity": "major",
+      "fix": {
+        "action": "rebalance_or_merge_classes",
+        "targets": [],
+        "class_ids": [
+          6
+        ]
+      },
+      "verified": null,
+      "verifier_note": ""
+    },
+    {
+      "type": "yaml_inconsistency",
+      "title": "data.yaml is missing or inconsistent",
+      "detail": "data.yaml declares nc=15 but lists 12 names",
+      "detector": "structure_scan",
+      "items": [],
+      "evidence": [
+        "data.yaml declares nc=15 but lists 12 names"
+      ],
+      "severity": "major",
+      "fix": {
+        "action": "fix_data_yaml",
+        "targets": []
+      },
+      "verified": null,
+      "verifier_note": ""
+    }
+  ]
+}

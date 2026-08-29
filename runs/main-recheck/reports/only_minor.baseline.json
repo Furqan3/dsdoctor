@@ -1,0 +1,93 @@
+{
+  "verdict": "fix_before_training",
+  "headline": "Dataset contains orphan label files, an empty label file, and numerous tiny boxes that require cleanup before training.",
+  "findings": [
+    {
+      "type": "orphan_label_file",
+      "severity": "major",
+      "files": [
+        "train/639462453486",
+        "train/915238652806",
+        "train/920332787315"
+      ],
+      "rationale": "The train split has 471 label files but only 468 images. The file listing shows 3 label files (639462453486, 915238652806, 920332787315) that do not have corresponding entries in the train image list, indicating orphaned labels."
+    },
+    {
+      "type": "empty_label_file",
+      "severity": "minor",
+      "files": [
+        "train/000000145597"
+      ],
+      "rationale": "The label file for image 000000145597 is empty, meaning the image has no annotations. This is valid for negative samples but should be verified if the dataset expects all images to have objects."
+    },
+    {
+      "type": "tiny_box",
+      "severity": "minor",
+      "files": [
+        "train/000000094751",
+        "train/000000361730",
+        "train/000000157756",
+        "train/000000540414",
+        "train/000000130386",
+        "train/000000575970",
+        "val/000000416451",
+        "train/000000447342",
+        "train/000000580410",
+        "train/000000204186",
+        "train/000000287874"
+      ],
+      "rationale": "Many label files contain boxes with very small widths and heights (e.g., < 0.02 or < 0.03 in normalized coordinates). These tiny boxes can destabilize training or be dropped by data augmentation, potentially leading to inconsistent learning."
+    }
+  ],
+  "_files_shown": [
+    "train/000000363840",
+    "train/000000463527",
+    "val/000000009590",
+    "train/000000057672",
+    "train/000000448410",
+    "val/000000379441",
+    "train/000000476119",
+    "train/000000468332",
+    "train/000000094751",
+    "train/000000361730",
+    "train/000000085157",
+    "train/000000357816",
+    "val/000000356248",
+    "train/000000180751",
+    "train/000000157756",
+    "train/000000567197",
+    "train/000000540414",
+    "train/000000130386",
+    "train/000000575970",
+    "val/000000416451",
+    "train/000000558854",
+    "train/000000541634",
+    "val/000000297084",
+    "train/000000447342",
+    "train/000000367095",
+    "val/000000340175",
+    "train/000000374052",
+    "train/000000349184",
+    "train/000000295420",
+    "train/000000030828",
+    "train/000000191013",
+    "train/000000461751",
+    "train/000000345356",
+    "train/000000248314",
+    "train/000000540502",
+    "train/000000361238",
+    "train/000000508917",
+    "train/000000490936",
+    "train/000000470924",
+    "train/000000355325",
+    "train/639462453486",
+    "train/000000036936",
+    "train/000000171382",
+    "train/000000580410",
+    "val/000000448256",
+    "train/000000204186",
+    "train/000000287874",
+    "train/000000172648",
+    "train/000000145597"
+  ]
+}

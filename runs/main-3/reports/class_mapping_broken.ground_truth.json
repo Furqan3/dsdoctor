@@ -1,0 +1,42 @@
+{
+  "seed": 107,
+  "recipe": {
+    "class_id_out_of_range": 4,
+    "malformed_label_row": 3
+  },
+  "applied": {
+    "class_id_out_of_range": 4,
+    "malformed_label_row": 3
+  },
+  "ground_truth": [
+    [
+      "class_id_out_of_range",
+      "train/000000436883"
+    ],
+    [
+      "class_id_out_of_range",
+      "train/000000492362"
+    ],
+    [
+      "class_id_out_of_range",
+      "val/000000297084"
+    ],
+    [
+      "class_id_out_of_range",
+      "val/000000536947"
+    ],
+    [
+      "malformed_label_row",
+      "train/000000085376"
+    ],
+    [
+      "malformed_label_row",
+      "train/000000336053"
+    ],
+    [
+      "malformed_label_row",
+      "train/000000468332"
+    ]
+  ],
+  "collateral": []
+}

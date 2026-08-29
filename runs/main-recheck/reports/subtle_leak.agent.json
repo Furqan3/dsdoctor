@@ -1,0 +1,28 @@
+{
+  "verdict": "blocked",
+  "headline": "3 val images are byte-identical to 3 train images (labels included) \u2014 your validation metrics are untrustworthy; remove the 3 val pairs and re-split before training.",
+  "training_impact": "Training will run fine, but the model will have memorised 3 of its 135 val images (10 boxes each, ~1.6% of val boxes). Any mAP/precision computed on this val set is inflated by an unknown margin, so you cannot compare checkpoints or decide ship-readiness from it. Fixing this after training means retraining, so do it now.",
+  "detectors_run": [
+    "structure_scan",
+    "image_integrity_scan",
+    "geometry_scan",
+    "normalisation_scan",
+    "class_scan",
+    "duplicate_scan"
+  ],
+  "suppressed": 0,
+  "reinstated": 0,
+  "swept_fallback": false,
+  "incomplete": "",
+  "decisions": [
+    {
+      "finding_id": "duplicate_scan:train_val_leakage:0",
+      "type": "train_val_leakage",
+      "action": "report",
+      "severity": "critical",
+      "source": "agent",
+      "rationale": "Exact detector, verified against the raw data: val/218885329401, val/706346898744 and val/916278631571 are sha1-identical to train/000000221754, train/000000336232 and train/000000277005 respectively, and the label files match row-for-row. This is not a near-duplicate or a false positive \u2014 the model will be graded on images it trained on. Fix: delete the 3 val image+label pairs (or move them to train) and re-split; then re-run the audit before training. Everything else is clean: no missing/orphan/empty labels, no malformed rows, no corrupt images, no out-of-bounds/degenerate/tiny boxes, no denormalised coordinates, no class-id errors.",
+      "files": 6
+    }
+  ]
+}

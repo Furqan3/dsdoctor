@@ -1,0 +1,37 @@
+{
+  "verdict": "fix_before_training",
+  "headline": "Dataset is structurally clean and will train, but dedupe 4 label files with repeated boxes and 4 pairs of identical train images first; val is clean so your validation number will be trustworthy.",
+  "training_impact": "Training runs fine and the val metric is meaningful \u2014 no val contamination, no missing/corrupt files, no class-id or normalisation defects. Left as-is, the 4 duplicated boxes double-count in the loss and break the one-target-per-object assumption used by NMS-free matchers, and the 8 duplicate train images over-weight their scenes \u2014 a small but real bias. Separately, 'book' is under-represented in train (74) vs val (228), so expect the book val score to read optimistically relative to train coverage.",
+  "detectors_run": [
+    "structure_scan",
+    "image_integrity_scan",
+    "geometry_scan",
+    "normalisation_scan",
+    "class_scan",
+    "duplicate_scan"
+  ],
+  "suppressed": 0,
+  "reinstated": 0,
+  "swept_fallback": false,
+  "incomplete": "",
+  "decisions": [
+    {
+      "finding_id": "geometry_scan:duplicate_annotation:0",
+      "type": "duplicate_annotation",
+      "action": "report",
+      "severity": "major",
+      "source": "agent",
+      "rationale": "Verified against raw bytes: line 9 of train/000000016451 repeats line 8, line 16 of train/000000136715 repeats line 6 (2 more files). The same box listed twice double-counts in the loss and breaks the one-target-per-object assumption for NMS-free matchers. All 4 are in train, so val is unaffected. Fix: dedupe the 4 label files (drop the repeated line in each).",
+      "files": 4
+    },
+    {
+      "finding_id": "duplicate_scan:near_duplicate_image:0",
+      "type": "near_duplicate_image",
+      "action": "report",
+      "severity": "major",
+      "source": "agent",
+      "rationale": "4 pairs of train images at perceptual distance 0/64 \u2014 identical hash, the concentrated one-directional pattern of a real duplication bug, not scattered ambiguity. 8 of 472 train images (~1.7%) over-weight their scenes and inflate the reported dataset size. All in train, no val impact. Fix: remove one image from each of the 4 pairs.",
+      "files": 8
+    }
+  ]
+}

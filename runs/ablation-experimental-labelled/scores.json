@@ -1,0 +1,62 @@
+{
+  "generated": "20260828-205808",
+  "corpus": "data/corpus_clean",
+  "model": "qwen3.8-27b",
+  "cases": [
+    "pristine"
+  ],
+  "aggregate": {
+    "agent": {
+      "cases": 1,
+      "ground_truth_facts": 0,
+      "hits": 0,
+      "misses": 0,
+      "recall": null,
+      "ground_truth_in_scope": null,
+      "recall_in_scope": null,
+      "false_positives": 0,
+      "critical_false_positives": 0,
+      "class_swap_false_positives": 0,
+      "precision": null,
+      "f1": null,
+      "verdict_correct": 1,
+      "verdict_scored": 1,
+      "leads_with_critical": 0,
+      "wall_seconds": 189.6,
+      "llm_calls": 14,
+      "tool_calls": 19,
+      "prompt_tokens": 43391,
+      "completion_tokens": 7206
+    }
+  },
+  "per_case": [
+    {
+      "case": "pristine",
+      "arm": "agent",
+      "n_ground_truth": 0,
+      "n_reported": 0,
+      "hits": 0,
+      "misses": 0,
+      "false_positives": 0,
+      "critical_false_positives": 0,
+      "class_swap_false_positives": 0,
+      "recall": null,
+      "precision": null,
+      "missed_facts": [],
+      "fp_facts": [],
+      "n_in_scope": null,
+      "hits_in_scope": null,
+      "recall_in_scope": null,
+      "wall_seconds": 189.57,
+      "llm_calls": 14,
+      "tool_calls": 19,
+      "prompt_tokens": 43391,
+      "completion_tokens": 7206,
+      "verdict": "usable_with_caveats",
+      "expected_verdict": "usable_with_caveats",
+      "verdict_correct": true,
+      "top_finding_type": "",
+      "top_is_critical": null
+    }
+  ]
+}

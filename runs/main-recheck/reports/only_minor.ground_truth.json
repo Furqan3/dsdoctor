@@ -1,0 +1,42 @@
+{
+  "seed": 110,
+  "recipe": {
+    "empty_label_file": 4,
+    "orphan_label_file": 3
+  },
+  "applied": {
+    "empty_label_file": 4,
+    "orphan_label_file": 3
+  },
+  "ground_truth": [
+    [
+      "empty_label_file",
+      "train/000000145597"
+    ],
+    [
+      "empty_label_file",
+      "train/000000376307"
+    ],
+    [
+      "empty_label_file",
+      "train/000000482436"
+    ],
+    [
+      "empty_label_file",
+      "val/000000045229"
+    ],
+    [
+      "orphan_label_file",
+      "train/639462453486"
+    ],
+    [
+      "orphan_label_file",
+      "train/915238652806"
+    ],
+    [
+      "orphan_label_file",
+      "train/920332787315"
+    ]
+  ],
+  "collateral": []
+}

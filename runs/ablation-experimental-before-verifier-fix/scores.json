@@ -1,0 +1,624 @@
+{
+  "generated": "20260828-195440",
+  "corpus": "data/corpus_clean",
+  "model": "qwen3.8-27b",
+  "cases": [
+    "pristine",
+    "everything"
+  ],
+  "aggregate": {
+    "script": {
+      "cases": 2,
+      "ground_truth_facts": 39,
+      "hits": 39,
+      "misses": 0,
+      "recall": 1.0,
+      "ground_truth_in_scope": null,
+      "recall_in_scope": null,
+      "false_positives": 110,
+      "critical_false_positives": 0,
+      "class_swap_false_positives": 110,
+      "precision": 0.26174496644295303,
+      "f1": 0.4148936170212766,
+      "verdict_correct": 0,
+      "verdict_scored": 0,
+      "leads_with_critical": 1,
+      "wall_seconds": 15.1,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0
+    },
+    "agent": {
+      "cases": 1,
+      "ground_truth_facts": 0,
+      "hits": 0,
+      "misses": 0,
+      "recall": null,
+      "ground_truth_in_scope": null,
+      "recall_in_scope": null,
+      "false_positives": 55,
+      "critical_false_positives": 0,
+      "class_swap_false_positives": 55,
+      "precision": 0.0,
+      "f1": 0.0,
+      "verdict_correct": 1,
+      "verdict_scored": 1,
+      "leads_with_critical": 0,
+      "wall_seconds": 241.9,
+      "llm_calls": 14,
+      "tool_calls": 19,
+      "prompt_tokens": 43643,
+      "completion_tokens": 9680
+    }
+  },
+  "per_case": [
+    {
+      "case": "pristine",
+      "arm": "script",
+      "n_ground_truth": 0,
+      "n_reported": 55,
+      "hits": 0,
+      "misses": 0,
+      "false_positives": 55,
+      "critical_false_positives": 0,
+      "class_swap_false_positives": 55,
+      "recall": null,
+      "precision": 0.0,
+      "missed_facts": [],
+      "fp_facts": [
+        [
+          "class_swap",
+          "train/000000026204"
+        ],
+        [
+          "class_swap",
+          "train/000000067616"
+        ],
+        [
+          "class_swap",
+          "train/000000070048"
+        ],
+        [
+          "class_swap",
+          "train/000000085376"
+        ],
+        [
+          "class_swap",
+          "train/000000100274"
+        ],
+        [
+          "class_swap",
+          "train/000000122166"
+        ],
+        [
+          "class_swap",
+          "train/000000124798"
+        ],
+        [
+          "class_swap",
+          "train/000000142472"
+        ],
+        [
+          "class_swap",
+          "train/000000142585"
+        ],
+        [
+          "class_swap",
+          "train/000000147725"
+        ],
+        [
+          "class_swap",
+          "train/000000157756"
+        ],
+        [
+          "class_swap",
+          "train/000000166391"
+        ],
+        [
+          "class_swap",
+          "train/000000171382"
+        ],
+        [
+          "class_swap",
+          "train/000000182611"
+        ],
+        [
+          "class_swap",
+          "train/000000183965"
+        ],
+        [
+          "class_swap",
+          "train/000000200961"
+        ],
+        [
+          "class_swap",
+          "train/000000203294"
+        ],
+        [
+          "class_swap",
+          "train/000000215723"
+        ],
+        [
+          "class_swap",
+          "train/000000221754"
+        ],
+        [
+          "class_swap",
+          "train/000000227478"
+        ],
+        [
+          "class_swap",
+          "train/000000231097"
+        ],
+        [
+          "class_swap",
+          "train/000000242411"
+        ],
+        [
+          "class_swap",
+          "train/000000254814"
+        ],
+        [
+          "class_swap",
+          "train/000000255917"
+        ],
+        [
+          "class_swap",
+          "train/000000273132"
+        ],
+        [
+          "class_swap",
+          "train/000000277020"
+        ],
+        [
+          "class_swap",
+          "train/000000286908"
+        ],
+        [
+          "class_swap",
+          "train/000000287291"
+        ],
+        [
+          "class_swap",
+          "train/000000290248"
+        ],
+        [
+          "class_swap",
+          "train/000000310072"
+        ],
+        [
+          "class_swap",
+          "train/000000346232"
+        ],
+        [
+          "class_swap",
+          "train/000000367680"
+        ],
+        [
+          "class_swap",
+          "train/000000368752"
+        ],
+        [
+          "class_swap",
+          "train/000000369812"
+        ],
+        [
+          "class_swap",
+          "train/000000418696"
+        ],
+        [
+          "class_swap",
+          "train/000000421455"
+        ],
+        [
+          "class_swap",
+          "train/000000436883"
+        ],
+        [
+          "class_swap",
+          "train/000000442456"
+        ],
+        [
+          "class_swap",
+          "train/000000460147"
+        ],
+        [
+          "class_swap",
+          "train/000000476704"
+        ]
+      ],
+      "n_in_scope": null,
+      "hits_in_scope": null,
+      "recall_in_scope": null,
+      "wall_seconds": 7.5,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "verdict": "n/a",
+      "expected_verdict": "usable_with_caveats",
+      "verdict_correct": null,
+      "top_finding_type": "class_swap",
+      "top_is_critical": false
+    },
+    {
+      "case": "pristine",
+      "arm": "agent",
+      "n_ground_truth": 0,
+      "n_reported": 55,
+      "hits": 0,
+      "misses": 0,
+      "false_positives": 55,
+      "critical_false_positives": 0,
+      "class_swap_false_positives": 55,
+      "recall": null,
+      "precision": 0.0,
+      "missed_facts": [],
+      "fp_facts": [
+        [
+          "class_swap",
+          "train/000000026204"
+        ],
+        [
+          "class_swap",
+          "train/000000067616"
+        ],
+        [
+          "class_swap",
+          "train/000000070048"
+        ],
+        [
+          "class_swap",
+          "train/000000085376"
+        ],
+        [
+          "class_swap",
+          "train/000000100274"
+        ],
+        [
+          "class_swap",
+          "train/000000122166"
+        ],
+        [
+          "class_swap",
+          "train/000000124798"
+        ],
+        [
+          "class_swap",
+          "train/000000142472"
+        ],
+        [
+          "class_swap",
+          "train/000000142585"
+        ],
+        [
+          "class_swap",
+          "train/000000147725"
+        ],
+        [
+          "class_swap",
+          "train/000000157756"
+        ],
+        [
+          "class_swap",
+          "train/000000166391"
+        ],
+        [
+          "class_swap",
+          "train/000000171382"
+        ],
+        [
+          "class_swap",
+          "train/000000182611"
+        ],
+        [
+          "class_swap",
+          "train/000000183965"
+        ],
+        [
+          "class_swap",
+          "train/000000200961"
+        ],
+        [
+          "class_swap",
+          "train/000000203294"
+        ],
+        [
+          "class_swap",
+          "train/000000215723"
+        ],
+        [
+          "class_swap",
+          "train/000000221754"
+        ],
+        [
+          "class_swap",
+          "train/000000227478"
+        ],
+        [
+          "class_swap",
+          "train/000000231097"
+        ],
+        [
+          "class_swap",
+          "train/000000242411"
+        ],
+        [
+          "class_swap",
+          "train/000000254814"
+        ],
+        [
+          "class_swap",
+          "train/000000255917"
+        ],
+        [
+          "class_swap",
+          "train/000000273132"
+        ],
+        [
+          "class_swap",
+          "train/000000277020"
+        ],
+        [
+          "class_swap",
+          "train/000000286908"
+        ],
+        [
+          "class_swap",
+          "train/000000287291"
+        ],
+        [
+          "class_swap",
+          "train/000000290248"
+        ],
+        [
+          "class_swap",
+          "train/000000310072"
+        ],
+        [
+          "class_swap",
+          "train/000000346232"
+        ],
+        [
+          "class_swap",
+          "train/000000367680"
+        ],
+        [
+          "class_swap",
+          "train/000000368752"
+        ],
+        [
+          "class_swap",
+          "train/000000369812"
+        ],
+        [
+          "class_swap",
+          "train/000000418696"
+        ],
+        [
+          "class_swap",
+          "train/000000421455"
+        ],
+        [
+          "class_swap",
+          "train/000000436883"
+        ],
+        [
+          "class_swap",
+          "train/000000442456"
+        ],
+        [
+          "class_swap",
+          "train/000000460147"
+        ],
+        [
+          "class_swap",
+          "train/000000476704"
+        ]
+      ],
+      "n_in_scope": null,
+      "hits_in_scope": null,
+      "recall_in_scope": null,
+      "wall_seconds": 241.94,
+      "llm_calls": 14,
+      "tool_calls": 19,
+      "prompt_tokens": 43643,
+      "completion_tokens": 9680,
+      "verdict": "usable_with_caveats",
+      "expected_verdict": "usable_with_caveats",
+      "verdict_correct": true,
+      "top_finding_type": "class_swap",
+      "top_is_critical": false
+    },
+    {
+      "case": "everything",
+      "arm": "script",
+      "n_ground_truth": 39,
+      "n_reported": 96,
+      "hits": 39,
+      "misses": 0,
+      "false_positives": 55,
+      "critical_false_positives": 0,
+      "class_swap_false_positives": 55,
+      "recall": 1.0,
+      "precision": 0.4148936170212766,
+      "missed_facts": [],
+      "fp_facts": [
+        [
+          "class_swap",
+          "train/000000026204"
+        ],
+        [
+          "class_swap",
+          "train/000000067616"
+        ],
+        [
+          "class_swap",
+          "train/000000070048"
+        ],
+        [
+          "class_swap",
+          "train/000000085376"
+        ],
+        [
+          "class_swap",
+          "train/000000100274"
+        ],
+        [
+          "class_swap",
+          "train/000000122166"
+        ],
+        [
+          "class_swap",
+          "train/000000124798"
+        ],
+        [
+          "class_swap",
+          "train/000000142472"
+        ],
+        [
+          "class_swap",
+          "train/000000142585"
+        ],
+        [
+          "class_swap",
+          "train/000000147725"
+        ],
+        [
+          "class_swap",
+          "train/000000157756"
+        ],
+        [
+          "class_swap",
+          "train/000000166391"
+        ],
+        [
+          "class_swap",
+          "train/000000171382"
+        ],
+        [
+          "class_swap",
+          "train/000000182611"
+        ],
+        [
+          "class_swap",
+          "train/000000183965"
+        ],
+        [
+          "class_swap",
+          "train/000000200961"
+        ],
+        [
+          "class_swap",
+          "train/000000215723"
+        ],
+        [
+          "class_swap",
+          "train/000000221754"
+        ],
+        [
+          "class_swap",
+          "train/000000227478"
+        ],
+        [
+          "class_swap",
+          "train/000000231097"
+        ],
+        [
+          "class_swap",
+          "train/000000242411"
+        ],
+        [
+          "class_swap",
+          "train/000000254814"
+        ],
+        [
+          "class_swap",
+          "train/000000255917"
+        ],
+        [
+          "class_swap",
+          "train/000000273132"
+        ],
+        [
+          "class_swap",
+          "train/000000277020"
+        ],
+        [
+          "class_swap",
+          "train/000000286908"
+        ],
+        [
+          "class_swap",
+          "train/000000287291"
+        ],
+        [
+          "class_swap",
+          "train/000000290248"
+        ],
+        [
+          "class_swap",
+          "train/000000310072"
+        ],
+        [
+          "class_swap",
+          "train/000000346232"
+        ],
+        [
+          "class_swap",
+          "train/000000367680"
+        ],
+        [
+          "class_swap",
+          "train/000000368752"
+        ],
+        [
+          "class_swap",
+          "train/000000369812"
+        ],
+        [
+          "class_swap",
+          "train/000000418696"
+        ],
+        [
+          "class_swap",
+          "train/000000421455"
+        ],
+        [
+          "class_swap",
+          "train/000000436883"
+        ],
+        [
+          "class_swap",
+          "train/000000442456"
+        ],
+        [
+          "class_swap",
+          "train/000000460147"
+        ],
+        [
+          "class_swap",
+          "train/000000476704"
+        ],
+        [
+          "class_swap",
+          "train/000000478721"
+        ]
+      ],
+      "n_in_scope": null,
+      "hits_in_scope": null,
+      "recall_in_scope": null,
+      "wall_seconds": 7.55,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "verdict": "n/a",
+      "expected_verdict": "blocked",
+      "verdict_correct": null,
+      "top_finding_type": "train_val_leakage",
+      "top_is_critical": true
+    }
+  ]
+}

@@ -1,0 +1,95 @@
+{
+  "clean_corpus_false_positive_groups": 7,
+  "clean_corpus_false_positive_files": 55,
+  "clean_corpus_claims": [
+    "37 box(es) labelled 'truck' look like 'car'",
+    "7 box(es) labelled 'cup' look like 'bowl'",
+    "6 box(es) labelled 'car' look like 'truck'",
+    "4 box(es) labelled 'bowl' look like 'cup'",
+    "2 box(es) labelled 'handbag' look like 'backpack'",
+    "2 box(es) labelled 'bench' look like 'person'",
+    "2 box(es) labelled 'backpack' look like 'person'"
+  ],
+  "sweep": [
+    {
+      "conf": 0.55,
+      "iou": 0.6,
+      "min_boxes": 2,
+      "min_rate": 0.6,
+      "tp": 4,
+      "fp": 30,
+      "recall": 0.26666666666666666,
+      "precision": 0.11764705882352941
+    },
+    {
+      "conf": 0.25,
+      "iou": 0.45,
+      "min_boxes": 2,
+      "min_rate": 0.6,
+      "tp": 11,
+      "fp": 84,
+      "recall": 0.7333333333333333,
+      "precision": 0.11578947368421053
+    },
+    {
+      "conf": 0.1,
+      "iou": 0.35,
+      "min_boxes": 2,
+      "min_rate": 0.6,
+      "tp": 10,
+      "fp": 163,
+      "recall": 0.6666666666666666,
+      "precision": 0.057803468208092484
+    },
+    {
+      "conf": 0.1,
+      "iou": 0.35,
+      "min_boxes": 2,
+      "min_rate": 0.75,
+      "tp": 10,
+      "fp": 139,
+      "recall": 0.6666666666666666,
+      "precision": 0.06711409395973154
+    },
+    {
+      "conf": 0.1,
+      "iou": 0.35,
+      "min_boxes": 2,
+      "min_rate": 1.0,
+      "tp": 7,
+      "fp": 124,
+      "recall": 0.4666666666666667,
+      "precision": 0.05343511450381679
+    },
+    {
+      "conf": 0.1,
+      "iou": 0.35,
+      "min_boxes": 3,
+      "min_rate": 0.75,
+      "tp": 7,
+      "fp": 35,
+      "recall": 0.4666666666666667,
+      "precision": 0.16666666666666666
+    },
+    {
+      "conf": 0.1,
+      "iou": 0.35,
+      "min_boxes": 3,
+      "min_rate": 0.9,
+      "tp": 4,
+      "fp": 20,
+      "recall": 0.26666666666666666,
+      "precision": 0.16666666666666666
+    },
+    {
+      "conf": 0.1,
+      "iou": 0.35,
+      "min_boxes": 3,
+      "min_rate": 1.0,
+      "tp": 4,
+      "fp": 20,
+      "recall": 0.26666666666666666,
+      "precision": 0.16666666666666666
+    }
+  ]
+}

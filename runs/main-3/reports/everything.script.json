@@ -1,0 +1,373 @@
+{
+  "findings": [
+    {
+      "type": "train_val_leakage",
+      "title": "3 image pair(s) leak between train and val",
+      "detail": "The validation split contains content the model trained on. Every metric computed against it is optimistic by an unknown margin, so it cannot be used to compare checkpoints or to decide the model is ready to ship. Re-split before doing anything else - fixing this after training means retraining.",
+      "detector": "duplicate_scan",
+      "items": [
+        "train/000000139684",
+        "train/000000287291",
+        "train/000000345466",
+        "val/575886541467",
+        "val/725460290497",
+        "val/963545096650"
+      ],
+      "evidence": [
+        "val/575886541467 is byte-identical to train/000000287291 (sha1 3c3813e105cb)",
+        "val/725460290497 is byte-identical to train/000000139684 (sha1 7b1bacb5b799)",
+        "val/963545096650 is byte-identical to train/000000345466 (sha1 608e6131eb29)"
+      ],
+      "severity": "critical",
+      "fix": {
+        "action": "resplit_removing_leaks",
+        "targets": [
+          "val/575886541467",
+          "val/725460290497",
+          "val/963545096650"
+        ]
+      },
+      "verified": null,
+      "verifier_note": ""
+    },
+    {
+      "type": "out_of_bounds",
+      "title": "20 box(es) fall outside the normalised [0,1] range",
+      "detail": "Coordinates outside [0,1] are clipped or rejected depending on the loader. Where they are clipped the box silently changes shape, so the model is trained against a target the annotator never drew.",
+      "detector": "geometry_scan",
+      "items": [
+        "train/000000016249",
+        "train/000000203294",
+        "train/000000377723",
+        "train/000000455716",
+        "train/000000477227"
+      ],
+      "evidence": [
+        "train/000000016249 line 1: xyxy=(42.6700,116.6902,190.3000,349.9602) -> '0 116.4850 233.3252 147.6300 233.2700'",
+        "train/000000016249 line 2: xyxy=(275.2300,38.1801,346.7500,164.4299) -> '0 310.9900 101.3050 71.5200 126.2498'",
+        "train/000000016249 line 3: xyxy=(314.4600,98.6701,454.0400,281.5701) -> '0 384.2500 190.1201 139.5800 182.9000'",
+        "train/000000016249 line 4: xyxy=(422.2500,101.2499,500.0000,259.0503) -> '0 461.1250 180.1501 77.7500 157.8004'",
+        "train/000000016249 line 5: xyxy=(222.9000,199.9896,286.0100,312.7301) -> '9 254.4550 256.3599 63.1100 112.7405'",
+        "train/000000016249 line 6: xyxy=(468.8700,99.0004,500.0000,144.9002) -> '0 484.4350 121.9503 31.1300 45.8998'",
+        "train/000000016249 line 7: xyxy=(29.4400,200.7800,172.8800,349.6701) -> '9 101.1600 275.2250 143.4400 148.8901'",
+        "train/000000016249 line 8: xyxy=(376.2500,153.6000,470.6400,261.7400) -> '9 423.4450 207.6700 94.3900 108.1400'",
+        "train/000000016249 line 9: xyxy=(324.8100,182.2901,399.4500,281.5403) -> '9 362.1300 231.9152 74.6400 99.2501'",
+        "train/000000016249 line 10: xyxy=(275.0800,67.2301,304.0000,135.7697) -> '11 289.5400 101.4999 28.9200 68.5397'",
+        "train/000000016249 line 11: xyxy=(427.0100,172.0398,474.2600,255.7102) -> '1 450.6350 213.8750 47.2500 83.6704'",
+        "train/000000203294 line 1: xyxy=(39.5501,208.5601,83.7197,333.5299) -> '0 61.6349 271.0450 44.1696 124.9699'"
+      ],
+      "severity": "critical",
+      "fix": {
+        "action": "clip_or_drop_boxes",
+        "targets": [
+          "train/000000016249",
+          "train/000000203294",
+          "train/000000377723",
+          "train/000000455716",
+          "train/000000477227"
+        ]
+      },
+      "verified": null,
+      "verifier_note": ""
+    },
+    {
+      "type": "class_id_out_of_range",
+      "title": "2 box(es) use a class id that does not exist",
+      "detail": "An id at or above nc indexes past the model's classification head. Ultralytics raises on this during dataset verification; a hand-rolled loader will index out of bounds mid-epoch.",
+      "detector": "class_scan",
+      "items": [
+        "train/000000179265",
+        "train/000000479030"
+      ],
+      "evidence": [
+        "train/000000179265 line 1: class id 13 but data.yaml defines 12 classes (0..11)",
+        "train/000000479030 line 1: class id 15 but data.yaml defines 12 classes (0..11)"
+      ],
+      "severity": "critical",
+      "fix": {
+        "action": "remap_or_drop_class_ids",
+        "targets": [
+          "train/000000179265",
+          "train/000000479030"
+        ]
+      },
+      "verified": null,
+      "verifier_note": ""
+    },
+    {
+      "type": "corrupt_image",
+      "title": "2 image(s) cannot be decoded",
+      "detail": "A corrupt image aborts the epoch in most training loops, or is skipped with a warning that is easy to miss in a long log.",
+      "detector": "image_integrity_scan",
+      "items": [
+        "train/000000336232",
+        "train/000000376307"
+      ],
+      "evidence": [
+        "train/000000336232: OSError: image file is truncated (40 bytes not processed)",
+        "train/000000376307: OSError: image file is truncated (42 bytes not processed)"
+      ],
+      "severity": "critical",
+      "fix": {
+        "action": "remove_corrupt_images",
+        "targets": [
+          "train/000000336232",
+          "train/000000376307"
+        ]
+      },
+      "verified": null,
+      "verifier_note": ""
+    },
+    {
+      "type": "degenerate_box",
+      "title": "2 box(es) have zero or negative width/height",
+      "detail": "A zero-area box produces a NaN in most IoU implementations, which propagates into the loss and ends the run.",
+      "detector": "geometry_scan",
+      "items": [
+        "val/000000356248",
+        "val/000000539883"
+      ],
+      "evidence": [
+        "val/000000356248 line 11: w=0 h=0.071094 -> '4 0.19069000 0.40879700 0.00000000 0.07109400'",
+        "val/000000539883 line 3: w=0 h=0.415924 -> '9 0.65421900 0.79203700 0.00000000 0.41592400'"
+      ],
+      "severity": "critical",
+      "fix": {
+        "action": "drop_degenerate_boxes",
+        "targets": [
+          "val/000000356248",
+          "val/000000539883"
+        ]
+      },
+      "verified": null,
+      "verifier_note": ""
+    },
+    {
+      "type": "denormalised_coords",
+      "title": "2 file(s) hold pixel coordinates instead of normalised fractions",
+      "detail": "The values are bounded by the image dimensions rather than by 1.0, so this is an export that skipped the divide-by-width/height step. Training on it produces boxes that collapse to the top-left corner.",
+      "detector": "normalisation_scan",
+      "items": [
+        "train/000000016249",
+        "train/000000203294"
+      ],
+      "evidence": [
+        "train/000000016249: 11/11 rows exceed 1.0; max x=484.435 y=275.225 vs image 500x365 -> '0 116.4850 233.3252 147.6300 233.2700'",
+        "train/000000203294: 6/6 rows exceed 1.0; max x=586.965 y=275.055 vs image 640x480 -> '0 61.6349 271.0450 44.1696 124.9699'"
+      ],
+      "severity": "critical",
+      "fix": {
+        "action": "normalise_coordinates",
+        "targets": [
+          "train/000000016249",
+          "train/000000203294"
+        ]
+      },
+      "verified": null,
+      "verifier_note": ""
+    },
+    {
+      "type": "malformed_label_row",
+      "title": "2 label row(s) are not parseable",
+      "detail": "A YOLO row must be `class_id xc yc w h`. Rows that are not will raise during dataset scanning or be skipped silently depending on the loader version.",
+      "detector": "structure_scan",
+      "items": [
+        "train/000000190753",
+        "val/000000440475"
+      ],
+      "evidence": [
+        "train/000000190753: line 5: expected 5 fields, found 6 -> '0 0.45071900 0.65775100 0.14165600 0.25345200 0.87'",
+        "val/000000440475: line 11: expected 5 fields, found 6 -> '10 0.32188300 0.54416900 0.01401600 0.04786800 0.87'"
+      ],
+      "severity": "critical",
+      "fix": {
+        "action": "repair_or_drop_rows",
+        "targets": [
+          "train/000000190753",
+          "val/000000440475"
+        ]
+      },
+      "verified": null,
+      "verifier_note": ""
+    },
+    {
+      "type": "near_duplicate_image",
+      "title": "3 near-duplicate image pair(s) inside a split",
+      "detail": "Duplicates inside train over-weight whatever they contain and inflate the dataset size the team reports. Duplicates inside val make one scene count several times toward the score.",
+      "detector": "duplicate_scan",
+      "items": [
+        "train/000000031248",
+        "train/000000511076",
+        "train/000000555597",
+        "train/168567947112",
+        "train/772403320943",
+        "train/986903153382"
+      ],
+      "evidence": [
+        "train/000000031248 ~ train/986903153382 (perceptual distance 0/64)",
+        "train/000000511076 ~ train/772403320943 (perceptual distance 0/64)",
+        "train/000000555597 ~ train/168567947112 (perceptual distance 0/64)"
+      ],
+      "severity": "major",
+      "fix": {
+        "action": "deduplicate_images",
+        "targets": [
+          "train/000000031248",
+          "train/000000511076",
+          "train/000000555597",
+          "train/168567947112",
+          "train/772403320943",
+          "train/986903153382"
+        ]
+      },
+      "verified": null,
+      "verifier_note": ""
+    },
+    {
+      "type": "duplicate_annotation",
+      "title": "3 box(es) are listed more than once in the same file",
+      "detail": "Duplicated boxes double-count in the loss and break the one-target-per-object assumption used by NMS-free matchers.",
+      "detector": "geometry_scan",
+      "items": [
+        "train/000000259597",
+        "train/000000416991",
+        "train/000000426203"
+      ],
+      "evidence": [
+        "train/000000259597 line 18 repeats line 5: '0 0.52216400 0.38512850 0.04467200 0.20564100'",
+        "train/000000416991 line 25 repeats line 14: '1 0.68546900 0.48480250 0.02500000 0.11069900'",
+        "train/000000426203 line 8 repeats line 3: '2 0.58189000 0.79374200 0.09664400 0.04289000'"
+      ],
+      "severity": "major",
+      "fix": {
+        "action": "dedupe_annotations",
+        "targets": [
+          "train/000000259597",
+          "train/000000416991",
+          "train/000000426203"
+        ]
+      },
+      "verified": null,
+      "verifier_note": ""
+    },
+    {
+      "type": "missing_label_file",
+      "title": "3 image(s) have no label file",
+      "detail": "Ultralytics treats an image with no .txt as a pure background image. If these are actually unlabelled foreground images the model is being explicitly taught that the objects in them are background, which suppresses recall for those classes.",
+      "detector": "structure_scan",
+      "items": [
+        "train/000000011197",
+        "train/000000035682",
+        "train/000000166747"
+      ],
+      "evidence": [
+        "no labels/train/000000011197.txt",
+        "no labels/train/000000035682.txt",
+        "no labels/train/000000166747.txt"
+      ],
+      "severity": "major",
+      "fix": {
+        "action": "create_empty_or_annotate",
+        "targets": [
+          "train/000000011197",
+          "train/000000035682",
+          "train/000000166747"
+        ]
+      },
+      "verified": null,
+      "verifier_note": ""
+    },
+    {
+      "type": "tiny_box",
+      "title": "3 box(es) are too small to survive the dataloader",
+      "detail": "Boxes with a normalised side below 0.003 are dropped during letterboxing. They inflate the apparent annotation count while contributing nothing, which makes per-class coverage look better than it is.",
+      "detector": "geometry_scan",
+      "items": [
+        "train/000000069224",
+        "train/000000221754",
+        "val/000000549220"
+      ],
+      "evidence": [
+        "train/000000069224 line 8: w=0.0005 h=0.0005 area=2.50e-07 -> '0 0.28622000 0.63284000 0.00050000 0.00050000'",
+        "train/000000221754 line 6: w=0.0005 h=0.0005 area=2.50e-07 -> '0 0.79403100 0.65891100 0.00050000 0.00050000'",
+        "val/000000549220 line 2: w=0.0005 h=0.0005 area=2.50e-07 -> '0 0.87303100 0.21011650 0.00050000 0.00050000'"
+      ],
+      "severity": "major",
+      "fix": {
+        "action": "drop_tiny_boxes",
+        "targets": [
+          "train/000000069224",
+          "train/000000221754",
+          "val/000000549220"
+        ]
+      },
+      "verified": null,
+      "verifier_note": ""
+    },
+    {
+      "type": "yaml_inconsistency",
+      "title": "data.yaml is missing or inconsistent",
+      "detail": "data.yaml declares nc=15 but lists 12 names",
+      "detector": "structure_scan",
+      "items": [],
+      "evidence": [
+        "data.yaml declares nc=15 but lists 12 names"
+      ],
+      "severity": "major",
+      "fix": {
+        "action": "fix_data_yaml",
+        "targets": []
+      },
+      "verified": null,
+      "verifier_note": ""
+    },
+    {
+      "type": "empty_label_file",
+      "title": "2 label file(s) contain no boxes",
+      "detail": "Intentional background images are a legitimate technique, but an unintended empty file is a silently dropped annotation. Confirm these are deliberate.",
+      "detector": "structure_scan",
+      "items": [
+        "train/000000127270",
+        "train/000000453841"
+      ],
+      "evidence": [
+        "0 rows in train/000000127270.txt",
+        "0 rows in train/000000453841.txt"
+      ],
+      "severity": "minor",
+      "fix": {
+        "action": "review_background_images",
+        "targets": [
+          "train/000000127270",
+          "train/000000453841"
+        ]
+      },
+      "verified": null,
+      "verifier_note": ""
+    },
+    {
+      "type": "orphan_label_file",
+      "title": "2 label file(s) have no image",
+      "detail": "These labels are never read during training. Usually the remains of a deleted or renamed image.",
+      "detector": "structure_scan",
+      "items": [
+        "train/454315123240",
+        "train/716312134591"
+      ],
+      "evidence": [
+        "labels present, image absent: train/454315123240",
+        "labels present, image absent: train/716312134591"
+      ],
+      "severity": "minor",
+      "fix": {
+        "action": "delete_orphan_labels",
+        "targets": [
+          "train/454315123240",
+          "train/716312134591"
+        ]
+      },
+      "verified": null,
+      "verifier_note": ""
+    }
+  ]
+}

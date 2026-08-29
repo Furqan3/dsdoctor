@@ -1,0 +1,46 @@
+{
+  "verdict": "blocked",
+  "headline": "Do not train yet: 3 zero-area boxes will NaN the loss and crash the run, and 2 out-of-bounds boxes sit in val and will corrupt your validation number \u2014 fix 8 boxes across 8 files and you're clear.",
+  "training_impact": "As-is, training will most likely die mid-run: a zero-area box (w=0) produces a NaN in standard IoU, which propagates into the loss. Even if your loader tolerates it, the 2 out-of-bounds boxes in val (val/000000035279, val/000000199771) get clipped or rejected, so the validation metric you use to make decisions is measured against targets the annotator never drew. The 3 train out-of-bounds boxes are silently re-shaped by clipping, teaching the model wrong geometry.",
+  "detectors_run": [
+    "structure_scan",
+    "image_integrity_scan",
+    "geometry_scan",
+    "normalisation_scan",
+    "class_scan",
+    "duplicate_scan"
+  ],
+  "suppressed": 0,
+  "reinstated": 0,
+  "swept_fallback": false,
+  "incomplete": "",
+  "decisions": [
+    {
+      "finding_id": "geometry_scan:degenerate_box:1",
+      "type": "degenerate_box",
+      "action": "report",
+      "severity": "critical",
+      "source": "agent",
+      "rationale": "3 boxes with w=0 (train/000000033221 line 14, train/000000067616 line 17, val/000000340175 line 2). Zero-area boxes yield NaN in most IoU implementations, which propagates into the loss and ends the run. This is the thing that blocks you today. Fix: delete these 3 rows (or re-annotate the objects they were meant to cover). One of them is in val, so it also taints the validation set.",
+      "files": 3
+    },
+    {
+      "finding_id": "geometry_scan:out_of_bounds:0",
+      "type": "out_of_bounds",
+      "action": "report",
+      "severity": "critical",
+      "source": "agent",
+      "rationale": "5 boxes with coordinates outside [0,1], e.g. train/000000361238 line 2 (y2=1.1313), val/000000035279 line 4 (y2=1.2310), val/000000199771 line 2 (y2=1.45). 3 in train, 2 in val. Loaders either clip these (silently changing the box shape the model learns) or reject them; the two val boxes mean your validation metric is computed on corrupted targets. Fix: clip to [0,1] or drop, then re-verify the affected images \u2014 offsets this large (up to 0.45 past the edge) suggest a bad annotation, not a rounding error.",
+      "files": 5
+    },
+    {
+      "finding_id": "geometry_scan:tiny_box:2",
+      "type": "tiny_box",
+      "action": "report",
+      "severity": "major",
+      "source": "agent",
+      "rationale": "4 boxes of 0.0005 x 0.0005 (area 2.5e-7), all in train (train/000000137727, 000000295713, 000000435880, 000000577932). These are below the letterbox drop threshold, so they contribute nothing to training while inflating your annotation counts and making per-class coverage look better than it is. Fix: drop the 4 rows. Cosmetic relative to the two criticals, but cheap to clean in the same pass.",
+      "files": 4
+    }
+  ]
+}

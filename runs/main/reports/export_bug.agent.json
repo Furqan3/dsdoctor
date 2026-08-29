@@ -1,0 +1,46 @@
+{
+  "verdict": "blocked",
+  "headline": "Don't train yet: 3 label rows carry a stray 6th field (one in val) that will crash dataset verification, and 4 train files were exported in pixel coordinates \u2014 fix both before the first run.",
+  "training_impact": "As-is, a strict loader raises on the 6-field rows during dataset scan (or silently drops them, losing 3 boxes including one val box, which quietly skews the val set). Separately, 51 boxes in 4 train files are in pixel space: loaders that clip will collapse them to a sliver in the top-left corner, and loaders that don't will feed coordinates up to 640 into the loss \u2014 either way the model trains on targets the annotator never drew. 51/4938 train boxes (~1%) is a small fraction, so this is a fixable defect, not a re-label \u2014 but it must be fixed before the number you read off val is trustworthy. Secondary note: val has 228 book instances vs 73 in train, so book mAP on val will be optimistic relative to train; not a blocker, but keep it in mind when reading the metrics.",
+  "detectors_run": [
+    "structure_scan",
+    "image_integrity_scan",
+    "geometry_scan",
+    "normalisation_scan",
+    "class_scan",
+    "duplicate_scan"
+  ],
+  "suppressed": 0,
+  "reinstated": 0,
+  "swept_fallback": false,
+  "incomplete": "",
+  "decisions": [
+    {
+      "finding_id": "structure_scan:malformed_label_row:0",
+      "type": "malformed_label_row",
+      "action": "report",
+      "severity": "critical",
+      "source": "agent",
+      "rationale": "3 rows have 6 fields instead of 5, each with a trailing 0.87 \u2014 a confidence score leaked in from the export. Verified against the raw files: train/000000242946 line 17, train/000000356531 line 1, val/000000172595 line 5. Strict loaders (ultralytics) raise on this during dataset verification, so it can block the run before epoch 1; lenient loaders drop the rows, and one of them is in val, which corrupts the set you measure on. Fix: delete the 6th field from these 3 rows (or re-export without the score column). Cheapest fix on this list, do it first.",
+      "files": 3
+    },
+    {
+      "finding_id": "normalisation_scan:denormalised_coords:0",
+      "type": "denormalised_coords",
+      "action": "report",
+      "severity": "critical",
+      "source": "agent",
+      "rationale": "Root cause of the out-of-bounds finding. 4 train files (000000001000, 000000067616, 000000355325, 000000511076) hold raw pixel coordinates: 100% of rows in each file exceed 1.0 and the maxima match the image dimensions exactly (e.g. max x=572.3, y=344.3 on a 640x480 image; max x=478 on a 478x640 image). This is the export skipping the divide-by-width/height step \u2014 a one-directional, near-total pattern, not annotation noise. 51 boxes total. Fix: divide x and w by image width, y and h by image height, per file, using each image's actual dimensions. Do not hand-clip these boxes; normalising is the correct repair.",
+      "files": 4
+    },
+    {
+      "finding_id": "geometry_scan:out_of_bounds:0",
+      "type": "out_of_bounds",
+      "action": "report",
+      "severity": "critical",
+      "source": "agent",
+      "rationale": "51 boxes outside [0,1], but all 51 are in the same 4 files flagged by the denormalised-coordinates finding \u2014 this is the symptom, not a separate defect. It is reported (exact-detector findings can't be dropped) but needs no independent fix: normalising those 4 files resolves every one of these boxes. Do not clip them separately, or you'll bake the wrong geometry in.",
+      "files": 4
+    }
+  ]
+}

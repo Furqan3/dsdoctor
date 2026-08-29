@@ -1,0 +1,123 @@
+{
+  "verdict": "fix_before_training",
+  "headline": "Dataset contains critical train/val leakage via duplicate image content and near-duplicates, along with minor coordinate anomalies.",
+  "findings": [
+    {
+      "type": "train_val_leakage",
+      "severity": "critical",
+      "files": [
+        "train/000000363840",
+        "val/000000363840"
+      ],
+      "rationale": "The file ID '000000363840' appears in both the train and val splits. In YOLO datasets, identical filenames across splits typically indicate the same image content is used for both training and validation, leading to data leakage and inflated performance metrics."
+    },
+    {
+      "type": "near_duplicate_image",
+      "severity": "major",
+      "files": [
+        "train/000000363840",
+        "val/000000363840"
+      ],
+      "rationale": "The presence of the same image ID in both splits suggests near-duplicate or identical images, which inflates the dataset size and biases the model towards specific samples."
+    },
+    {
+      "type": "out_of_bounds",
+      "severity": "minor",
+      "files": [
+        "train/000000468332"
+      ],
+      "rationale": "The box '3 0.37535900 0.95217000 0.74753000 0.09566000' has a bottom-right y-coordinate of 0.95217 + 0.09566 = 1.04783, which exceeds the normalized [0,1] range. While some frameworks clip these, it is technically out of bounds."
+    },
+    {
+      "type": "out_of_bounds",
+      "severity": "minor",
+      "files": [
+        "train/000000180751"
+      ],
+      "rationale": "The box '3 0.50486700 0.61429200 0.99026600 0.74545800' has a bottom-right y-coordinate of 0.614292 + 0.745458 = 1.35975, which is significantly out of the [0,1] range."
+    },
+    {
+      "type": "out_of_bounds",
+      "severity": "minor",
+      "files": [
+        "train/000000345356"
+      ],
+      "rationale": "The box '3 0.49968000 0.89610400 0.99545400 0.18183200' has a bottom-right y-coordinate of 0.896104 + 0.181832 = 1.077936, which exceeds the [0,1] range."
+    },
+    {
+      "type": "out_of_bounds",
+      "severity": "minor",
+      "files": [
+        "train/000000355325"
+      ],
+      "rationale": "The box '3 0.50000000 0.74943700 1.00000000 0.47415600' has a bottom-right y-coordinate of 0.749437 + 0.474156 = 1.223593, which exceeds the [0,1] range."
+    },
+    {
+      "type": "out_of_bounds",
+      "severity": "minor",
+      "files": [
+        "train/000000461751"
+      ],
+      "rationale": "The box '2 0.50300000 0.36405100 0.99400000 0.61572800' has a bottom-right y-coordinate of 0.364051 + 0.615728 = 0.979779 (within range) but the right x-coordinate is 0.503 + 0.994 = 1.497, which is out of bounds."
+    },
+    {
+      "type": "out_of_bounds",
+      "severity": "minor",
+      "files": [
+        "val/000000356424"
+      ],
+      "rationale": "The box '3 0.50300000 0.79565650 0.99400000 0.38203100' has a bottom-right y-coordinate of 0.7956565 + 0.382031 = 1.1776875, which exceeds the [0,1] range."
+    }
+  ],
+  "_files_shown": [
+    "train/000000363840",
+    "train/000000463527",
+    "val/000000014038",
+    "train/000000057672",
+    "train/000000448410",
+    "val/000000388258",
+    "train/000000476119",
+    "train/000000468332",
+    "train/000000094751",
+    "train/000000361730",
+    "train/000000085157",
+    "train/000000357816",
+    "val/000000367386",
+    "train/000000180751",
+    "train/000000157756",
+    "train/000000567197",
+    "train/000000540414",
+    "train/000000130386",
+    "train/000000575970",
+    "val/000000436738",
+    "train/000000558854",
+    "train/000000541634",
+    "val/000000325483",
+    "train/000000447342",
+    "train/000000367095",
+    "val/000000356424",
+    "train/000000374052",
+    "train/000000349184",
+    "train/000000295420",
+    "train/000000030828",
+    "train/000000191013",
+    "train/000000461751",
+    "train/000000345356",
+    "train/000000248314",
+    "train/000000540502",
+    "train/000000361238",
+    "train/000000508917",
+    "train/000000490936",
+    "train/000000470924",
+    "train/000000355325",
+    "val/000000000139",
+    "train/000000036936",
+    "train/000000171382",
+    "train/000000580410",
+    "val/000000471893",
+    "train/000000204186",
+    "train/000000287874",
+    "train/000000190923",
+    "train/000000211120"
+  ]
+}

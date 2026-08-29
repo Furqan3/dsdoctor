@@ -1,0 +1,58 @@
+{
+  "findings": [
+    {
+      "type": "corrupt_image",
+      "title": "4 image(s) cannot be decoded",
+      "detail": "A corrupt image aborts the epoch in most training loops, or is skipped with a warning that is easy to miss in a long log.",
+      "detector": "image_integrity_scan",
+      "items": [
+        "train/000000076547",
+        "train/000000140987",
+        "train/000000271116",
+        "val/000000539883"
+      ],
+      "evidence": [
+        "train/000000076547: OSError: image file is truncated (62 bytes not processed)",
+        "train/000000140987: OSError: image file is truncated (31 bytes not processed)",
+        "train/000000271116: OSError: image file is truncated (15 bytes not processed)",
+        "val/000000539883: OSError: image file is truncated (43 bytes not processed)"
+      ],
+      "severity": "critical",
+      "fix": {
+        "action": "remove_corrupt_images",
+        "targets": [
+          "train/000000076547",
+          "train/000000140987",
+          "train/000000271116",
+          "val/000000539883"
+        ]
+      },
+      "verified": null,
+      "verifier_note": ""
+    },
+    {
+      "type": "missing_label_file",
+      "title": "2 image(s) have no label file",
+      "detail": "Ultralytics treats an image with no .txt as a pure background image. If these are actually unlabelled foreground images the model is being explicitly taught that the objects in them are background, which suppresses recall for those classes.",
+      "detector": "structure_scan",
+      "items": [
+        "train/000000303713",
+        "train/000000577976"
+      ],
+      "evidence": [
+        "no labels/train/000000303713.txt",
+        "no labels/train/000000577976.txt"
+      ],
+      "severity": "major",
+      "fix": {
+        "action": "create_empty_or_annotate",
+        "targets": [
+          "train/000000303713",
+          "train/000000577976"
+        ]
+      },
+      "verified": null,
+      "verifier_note": ""
+    }
+  ]
+}

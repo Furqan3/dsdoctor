@@ -1,0 +1,84 @@
+{
+  "verdict": "usable_with_caveats",
+  "headline": "Dataset is clean and safe to train on \u2014 all exact checks pass; the only flags are experimental-detector false positives from normal class-boundary ambiguity.",
+  "training_impact": "Trains without issue. No missing/orphan/empty labels, no malformed rows, no corrupt images, no out-of-bounds/degenerate/tiny/duplicate boxes, coordinates are properly normalised, all class ids are in range, and there is no train/val leakage or near-duplicate content. The validation number will be meaningful. The only real (minor) caveat is genuine label ambiguity on a handful of car/truck and cup/bowl boxes, which will add a little noise to those two class pairs but will not corrupt the run or the metric.",
+  "detectors_run": [
+    "structure_scan",
+    "image_integrity_scan",
+    "geometry_scan",
+    "normalisation_scan",
+    "class_scan",
+    "class_distribution",
+    "duplicate_scan",
+    "model_disagreement_scan"
+  ],
+  "suppressed": 7,
+  "reinstated": 0,
+  "swept_fallback": false,
+  "incomplete": "",
+  "decisions": [
+    {
+      "finding_id": "model_disagreement_scan:class_swap:0",
+      "type": "class_swap",
+      "action": "suppress",
+      "severity": "minor",
+      "source": "agent",
+      "rationale": "37 truck\u2192car, but only 37/201 of train trucks, and it is paired with the reverse car\u2192truck finding (6 boxes). Two-way, small-fraction disagreement is the signature of car/truck boundary ambiguity (pickups, partial occlusion), not a one-directional mapping bug. Experimental detector, so not a finding on its own. [verifier upheld: The evidence shows a two-way disagreement (37 truck-to-car vs 6 car-to-truck) between visually similar classes, which is the specific signature of annotation ambiguity rather than a systematic defect.]",
+      "files": 32
+    },
+    {
+      "finding_id": "model_disagreement_scan:class_swap:2",
+      "type": "class_swap",
+      "action": "suppress",
+      "severity": "minor",
+      "source": "agent",
+      "rationale": "6 car\u2192truck, 6/577 of train cars, and the mirror of the truck\u2192car finding. Bidirectional pair = ordinary ambiguity, not a systematic remap error. [verifier upheld: The evidence shows a bidirectional disagreement between visually similar classes (car and truck), which indicates annotation ambiguity rather than a systematic defect.]",
+      "files": 6
+    },
+    {
+      "finding_id": "model_disagreement_scan:class_swap:1",
+      "type": "class_swap",
+      "action": "suppress",
+      "severity": "minor",
+      "source": "agent",
+      "rationale": "7 cup\u2192bowl, 7/355 of train cups, paired with the reverse bowl\u2192cup finding (4 boxes). Two-way, small-fraction = deep-mug-vs-bowl ambiguity, not a mapping bug. [verifier upheld: The evidence shows a two-way disagreement between visually similar classes (cup and bowl) in a small fraction of the dataset, which indicates annotation ambiguity rather than a systematic defect.]",
+      "files": 7
+    },
+    {
+      "finding_id": "model_disagreement_scan:class_swap:3",
+      "type": "class_swap",
+      "action": "suppress",
+      "severity": "minor",
+      "source": "agent",
+      "rationale": "4 bowl\u2192cup, 4/251 of train bowls, mirror of the cup\u2192bowl finding. Bidirectional pair = boundary ambiguity, not a real defect. [verifier upheld: The evidence shows a bidirectional disagreement between visually similar classes ('bowl' and 'cup'), which indicates annotation ambiguity rather than a systematic defect.]",
+      "files": 4
+    },
+    {
+      "finding_id": "model_disagreement_scan:class_swap:4",
+      "type": "class_swap",
+      "action": "suppress",
+      "severity": "minor",
+      "source": "agent",
+      "rationale": "2 boxes (1 train, 1 val), handbag\u2194backpack \u2014 a classic COCO confusion pair. 2/274 handbags is scattered disagreement, not a systematic error. [verifier upheld: The finding represents a scattered, two-directional disagreement between visually similar classes (handbag and backpack) in a small number of instances, which indicates annotation ambiguity rather tha]",
+      "files": 2
+    },
+    {
+      "finding_id": "model_disagreement_scan:class_swap:5",
+      "type": "class_swap",
+      "action": "suppress",
+      "severity": "minor",
+      "source": "agent",
+      "rationale": "2 boxes, bench\u2192person, 2/185 benches. A person sitting on a bench is a well-known detector confusion; scattered, not systematic. [verifier upheld: The finding represents a scattered, two-directional confusion between visually similar classes (person and bench) where a person is sitting on a bench, which is a known annotation ambiguity rather tha]",
+      "files": 2
+    },
+    {
+      "finding_id": "model_disagreement_scan:class_swap:6",
+      "type": "class_swap",
+      "action": "suppress",
+      "severity": "minor",
+      "source": "agent",
+      "rationale": "2 boxes, both in val, backpack\u2192person, 2/36 val backpacks. Person-carrying-backpack confusion; scattered, not a mapping bug. Worth a glance since it touches val, but 2 boxes cannot corrupt the metric. [verifier upheld: The evidence shows a scattered, two-directional confusion between visually similar classes (person and backpack) in a small number of cases, which indicates annotation ambiguity rather than a systemat]",
+      "files": 2
+    }
+  ]
+}

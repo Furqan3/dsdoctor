@@ -1,0 +1,46 @@
+{
+  "verdict": "fix_before_training",
+  "headline": "Trainable, but 5 images lack label files \u2014 2 of them in val, which will corrupt your validation mAP; create the missing .txt files (empty if truly background) before training.",
+  "training_impact": "Training will not crash: Ultralytics treats an image with no .txt as a pure background image. The cost is silent, not fatal. The 3 unlabelled train images teach the model that any objects in them are background, suppressing recall for those classes. Worse, the 2 unlabelled val images (val/000000223182, val/000000549220) are scored as background: if they contain objects, your validation mAP is measured against a corrupted set and the number you use to make the go/no-go decision is wrong. Everything else (geometry, normalisation, class IDs, leakage, image integrity) is clean.",
+  "detectors_run": [
+    "structure_scan",
+    "image_integrity_scan",
+    "geometry_scan",
+    "normalisation_scan",
+    "class_scan",
+    "duplicate_scan"
+  ],
+  "suppressed": 0,
+  "reinstated": 0,
+  "swept_fallback": false,
+  "incomplete": "",
+  "decisions": [
+    {
+      "finding_id": "structure_scan:missing_label_file:0",
+      "type": "missing_label_file",
+      "action": "report",
+      "severity": "major",
+      "source": "agent",
+      "rationale": "5 images have no label file: train/000000006040, train/000000226147, train/000000322610, val/000000223182, val/000000549220. Exact detector, verified \u2014 the .txt files are genuinely absent. Two are in val, so this is the one finding that can invalidate your validation metric, not just degrade the model. Fix: open each image; if it is a genuine background scene, create an empty .txt; if it contains objects, annotate it. Do this before training, and re-run the structure scan to confirm 468/468 and 132/130\u2192132/132 pairing.",
+      "files": 5
+    },
+    {
+      "finding_id": "structure_scan:empty_label_file:2",
+      "type": "empty_label_file",
+      "action": "report",
+      "severity": "minor",
+      "source": "agent",
+      "rationale": "3 train label files contain zero rows: train/000000211120, train/000000242934, train/000000368335. Empty labels are a legitimate background-image technique, so this may be intentional \u2014 but an accidentally emptied file is a silently dropped annotation. Visually confirm the three images are true backgrounds; if not, re-annotate. Low urgency: 3 of 468 train images, no effect on the val number.",
+      "files": 3
+    },
+    {
+      "finding_id": "structure_scan:orphan_label_file:1",
+      "type": "orphan_label_file",
+      "action": "report",
+      "severity": "minor",
+      "source": "agent",
+      "rationale": "3 label files with no matching image: train/398764888884, train/531232685887, train/654553082395. These are never read during training \u2014 pure dead weight, likely remnants of deleted/renamed images. Delete them for hygiene; zero impact on training or metrics.",
+      "files": 3
+    }
+  ]
+}

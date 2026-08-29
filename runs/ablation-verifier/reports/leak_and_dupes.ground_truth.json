@@ -1,0 +1,76 @@
+{
+  "seed": 111,
+  "recipe": {
+    "train_val_leakage": 4,
+    "near_duplicate_image": 2,
+    "duplicate_annotation": 3
+  },
+  "applied": {
+    "train_val_leakage": 8,
+    "near_duplicate_image": 4,
+    "duplicate_annotation": 3
+  },
+  "ground_truth": [
+    [
+      "duplicate_annotation",
+      "train/000000231822"
+    ],
+    [
+      "duplicate_annotation",
+      "train/000000255917"
+    ],
+    [
+      "duplicate_annotation",
+      "train/000000462756"
+    ],
+    [
+      "near_duplicate_image",
+      "train/000000150638"
+    ],
+    [
+      "near_duplicate_image",
+      "train/000000295420"
+    ],
+    [
+      "near_duplicate_image",
+      "train/303522373741"
+    ],
+    [
+      "near_duplicate_image",
+      "train/912024475486"
+    ],
+    [
+      "train_val_leakage",
+      "train/000000056127"
+    ],
+    [
+      "train_val_leakage",
+      "train/000000080932"
+    ],
+    [
+      "train_val_leakage",
+      "train/000000166166"
+    ],
+    [
+      "train_val_leakage",
+      "train/000000476787"
+    ],
+    [
+      "train_val_leakage",
+      "val/214827540762"
+    ],
+    [
+      "train_val_leakage",
+      "val/382780712741"
+    ],
+    [
+      "train_val_leakage",
+      "val/438274936455"
+    ],
+    [
+      "train_val_leakage",
+      "val/889941193761"
+    ]
+  ],
+  "collateral": []
+}

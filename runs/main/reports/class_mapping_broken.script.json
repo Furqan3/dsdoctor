@@ -1,0 +1,61 @@
+{
+  "findings": [
+    {
+      "type": "class_id_out_of_range",
+      "title": "4 box(es) use a class id that does not exist",
+      "detail": "An id at or above nc indexes past the model's classification head. Ultralytics raises on this during dataset verification; a hand-rolled loader will index out of bounds mid-epoch.",
+      "detector": "class_scan",
+      "items": [
+        "train/000000436883",
+        "train/000000492362",
+        "val/000000297084",
+        "val/000000536947"
+      ],
+      "evidence": [
+        "train/000000436883 line 4: class id 13 but data.yaml defines 12 classes (0..11)",
+        "train/000000492362 line 5: class id 15 but data.yaml defines 12 classes (0..11)",
+        "val/000000297084 line 4: class id 13 but data.yaml defines 12 classes (0..11)",
+        "val/000000536947 line 1: class id 15 but data.yaml defines 12 classes (0..11)"
+      ],
+      "severity": "critical",
+      "fix": {
+        "action": "remap_or_drop_class_ids",
+        "targets": [
+          "train/000000436883",
+          "train/000000492362",
+          "val/000000297084",
+          "val/000000536947"
+        ]
+      },
+      "verified": null,
+      "verifier_note": ""
+    },
+    {
+      "type": "malformed_label_row",
+      "title": "3 label row(s) are not parseable",
+      "detail": "A YOLO row must be `class_id xc yc w h`. Rows that are not will raise during dataset scanning or be skipped silently depending on the loader version.",
+      "detector": "structure_scan",
+      "items": [
+        "train/000000085376",
+        "train/000000336053",
+        "train/000000468332"
+      ],
+      "evidence": [
+        "train/000000085376: line 4: expected 5 fields, found 6 -> '2 0.35076000 0.51731150 0.14235400 0.03737500 0.87'",
+        "train/000000336053: line 8: expected 5 fields, found 6 -> '0 0.84375000 0.49211550 0.31250000 0.76352100 0.87'",
+        "train/000000468332: line 5: expected 5 fields, found 6 -> '0 0.86772650 0.83259400 0.26454700 0.31235800 0.87'"
+      ],
+      "severity": "critical",
+      "fix": {
+        "action": "repair_or_drop_rows",
+        "targets": [
+          "train/000000085376",
+          "train/000000336053",
+          "train/000000468332"
+        ]
+      },
+      "verified": null,
+      "verifier_note": ""
+    }
+  ]
+}

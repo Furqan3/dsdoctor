@@ -1,0 +1,60 @@
+{
+  "seed": 105,
+  "recipe": {
+    "missing_label_file": 5,
+    "empty_label_file": 3,
+    "orphan_label_file": 3
+  },
+  "applied": {
+    "missing_label_file": 5,
+    "empty_label_file": 3,
+    "orphan_label_file": 3
+  },
+  "ground_truth": [
+    [
+      "empty_label_file",
+      "train/000000211120"
+    ],
+    [
+      "empty_label_file",
+      "train/000000242934"
+    ],
+    [
+      "empty_label_file",
+      "train/000000368335"
+    ],
+    [
+      "missing_label_file",
+      "train/000000006040"
+    ],
+    [
+      "missing_label_file",
+      "train/000000226147"
+    ],
+    [
+      "missing_label_file",
+      "train/000000322610"
+    ],
+    [
+      "missing_label_file",
+      "val/000000223182"
+    ],
+    [
+      "missing_label_file",
+      "val/000000549220"
+    ],
+    [
+      "orphan_label_file",
+      "train/398764888884"
+    ],
+    [
+      "orphan_label_file",
+      "train/531232685887"
+    ],
+    [
+      "orphan_label_file",
+      "train/654553082395"
+    ]
+  ],
+  "collateral": []
+}

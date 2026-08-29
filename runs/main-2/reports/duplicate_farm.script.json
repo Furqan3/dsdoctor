@@ -1,0 +1,72 @@
+{
+  "findings": [
+    {
+      "type": "near_duplicate_image",
+      "title": "4 near-duplicate image pair(s) inside a split",
+      "detail": "Duplicates inside train over-weight whatever they contain and inflate the dataset size the team reports. Duplicates inside val make one scene count several times toward the score.",
+      "detector": "duplicate_scan",
+      "items": [
+        "train/000000064084",
+        "train/000000077396",
+        "train/000000227399",
+        "train/000000435208",
+        "train/354608865506",
+        "train/404490299022",
+        "train/553349435394",
+        "train/931528508977"
+      ],
+      "evidence": [
+        "train/000000064084 ~ train/404490299022 (perceptual distance 0/64)",
+        "train/000000077396 ~ train/553349435394 (perceptual distance 0/64)",
+        "train/000000227399 ~ train/931528508977 (perceptual distance 0/64)",
+        "train/000000435208 ~ train/354608865506 (perceptual distance 0/64)"
+      ],
+      "severity": "major",
+      "fix": {
+        "action": "deduplicate_images",
+        "targets": [
+          "train/000000064084",
+          "train/000000077396",
+          "train/000000227399",
+          "train/000000435208",
+          "train/354608865506",
+          "train/404490299022",
+          "train/553349435394",
+          "train/931528508977"
+        ]
+      },
+      "verified": null,
+      "verifier_note": ""
+    },
+    {
+      "type": "duplicate_annotation",
+      "title": "4 box(es) are listed more than once in the same file",
+      "detail": "Duplicated boxes double-count in the loss and break the one-target-per-object assumption used by NMS-free matchers.",
+      "detector": "geometry_scan",
+      "items": [
+        "train/000000016451",
+        "train/000000136715",
+        "train/000000230993",
+        "train/000000313588"
+      ],
+      "evidence": [
+        "train/000000016451 line 9 repeats line 8: '11 0.87822700 0.78724750 0.13799000 0.10070300'",
+        "train/000000136715 line 16 repeats line 6: '0 0.62028100 0.19757600 0.04471800 0.04908200'",
+        "train/000000230993 line 6 repeats line 1: '0 0.68262500 0.71503750 0.21059400 0.51909300'",
+        "train/000000313588 line 5 repeats line 1: '2 0.36263500 0.46708600 0.09114600 0.04329600'"
+      ],
+      "severity": "major",
+      "fix": {
+        "action": "dedupe_annotations",
+        "targets": [
+          "train/000000016451",
+          "train/000000136715",
+          "train/000000230993",
+          "train/000000313588"
+        ]
+      },
+      "verified": null,
+      "verifier_note": ""
+    }
+  ]
+}

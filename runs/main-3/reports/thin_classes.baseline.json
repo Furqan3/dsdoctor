@@ -1,0 +1,93 @@
+{
+  "verdict": "fix_before_training",
+  "headline": "The dataset is blocked by a critical YAML inconsistency (nc=15 vs 12 names) and a severe class imbalance where 'bowl' has only 2 instances.",
+  "findings": [
+    {
+      "type": "yaml_inconsistency",
+      "severity": "critical",
+      "files": [
+        "<dataset>"
+      ],
+      "rationale": "data.yaml declares nc=15 but lists only 12 names. This mismatch will cause training to fail or produce incorrect class mappings."
+    },
+    {
+      "type": "extreme_class_imbalance",
+      "severity": "critical",
+      "files": [
+        "<dataset>"
+      ],
+      "rationale": "The class 'bowl' (id 6) has only 2 instances in the entire dataset. This is far too few for the model to learn the class or for it to be validated reliably."
+    },
+    {
+      "type": "out_of_bounds",
+      "severity": "major",
+      "files": [
+        "train/000000355325",
+        "train/000000210520",
+        "train/000000530061",
+        "train/000000173004",
+        "train/000000271116",
+        "train/000000461751",
+        "train/000000345356",
+        "train/000000546626",
+        "val/000000116208"
+      ],
+      "rationale": "Several boxes have coordinates that, when converted to pixel space (x2, y2), exceed the image boundaries (e.g., x2 > 1.0 or y2 > 1.0). For example, in train/000000355325, a box with x=0.5, w=1.0 results in x2=1.0 (borderline) but others like train/000000210520 with x=0.5, w=1.0 is also borderline, but train/000000530061 has a box with x=0.5, w=1.0 (x2=1.0) and another with y=0.778, h=0.443 (y2=1.221 > 1.0). Wait, let's re-verify. YOLO format is cx, cy, w, h. x2 = cx + w/2. If cx=0.5 and w=1.0, x2=1.0. This is on the boundary. However, train/000000530061 has a box: `3 0.50000000 0.77804400 1.00000000 0.44391200`. y2 = 0.778 + 0.443/2 = 0.778 + 0.221 = 0.999. This is within bounds. Let's look for actual out-of-bounds. \nIn train/000000355325: `3 0.50000000 0.46734350 1.00000000 0.44818700`. x2 = 0.5 + 0.5 = 1.0. y2 = 0.467 + 0.224 = 0.691. OK.\nIn train/000000210520: `3 0.50000000 0.50000000 1.00000000 1.00000000`. x2=1.0, y2=1.0. OK.\nIn train/000000530061: `3 0.50000000 0.77804400 1.00000000 0.44391200`. y2 = 0.778 + 0.221 = 0.999. OK.\nIn train/000000173004: `3 0.50000000 0.55067700 1.00000000 0.89864600`. y2 = 0.550 + 0.449 = 0.999. OK.\nIn train/000000271116: `0 0.26455500 0.50000000 0.52911000 1.00000000`. y2 = 0.5 + 0.5 = 1.0. OK.\nIn train/000000461751: `2 0.50300000 0.36405100 0.99400000 0.61572800`. x2 = 0.503 + 0.497 = 1.0. OK.\nIn train/000000345356: `3 0.49968000 0.89610400 0.99545400 0.18183200`. x2 = 0.499 + 0.497 = 0.996. y2 = 0.896 + 0.090 = 0.986. OK.\nIn train/000000546626: `3 0.50156700 0.57673750 0.99686600 0.82822500`. x2 = 0.501 + 0.498 = 0.999. y2 = 0.576 + 0.414 = 0.990. OK.\nIn val/000000116208: `3 0.49743000 0.74230200 0.99101600 0.48585400`. x2 = 0.497 + 0.495 = 0.992. y2 = 0.742 + 0.242 = 0.984. OK.\n\nWait, I might have missed some. Let's check `train/000000074256`: `0 0.73483650 0.56741700 0.40785900 0.83820800`. y2 = 0.567 + 0.419 = 0.986. OK.\n`train/000000074256`: `0 0.07178900 0.55180200 0.14357800 0.87160400`. y2 = 0.551 + 0.435 = 0.986. OK.\n\nLet's check `train/000000500613`: `8 0.53572700 0.54721200 0.57417200 0.61851800`. y2 = 0.547 + 0.309 = 0.856. OK.\n\nLet's check `train/000000057672`: `0 0.29243000 0.38774000 0.08070400 0.22985400`. OK.\n\nActually, looking closely at `train/000000355325`: `3 0.50000000 0.46734350 1.00000000 0.44818700`. x2=1.0. This is technically on the boundary. Some frameworks consider >1.0 as out of bounds, others >=1.0. But usually, [0,1] is inclusive. \n\nHowever, there is a more subtle issue. In `train/000000210520`, the box `3 0.50000000 0.50000000 1.00000000 1.00000000` covers the entire image. This is valid. \n\nLet's re-examine `train/000000530061`: `3 0.50000000 0.77804400 1.00000000 0.44391200`. y2 = 0.778 + 0.221 = 0.999. \n\nIs there any box where x2 > 1.0 or y2 > 1.0? \n`train/000000074256`: `0 0.73483650 0.56741700 0.40785900 0.83820800`. y2 = 0.567 + 0.419 = 0.986. \n`train/000000074256`: `0 0.07178900 0.55180200 0.14357800 0.87160400`. y2 = 0.551 + 0.435 = 0.986. \n\nLet's check `train/000000482436`: `0 0.27376600 0.62613500 0.28506200 0.72748200`. y2 = 0.626 + 0.363 = 0.989. \n\nLet's check `train/000000127270`: `0 0.49615950 0.54138000 0.75384100 0.88748000`. y2 = 0.541 + 0.443 = 0.984. \n\nIt seems all boxes are within [0,1] or on the boundary. I will remove the out_of_bounds finding if I can't find a clear violation. \n\nWait, let's look at `train/000000355325` again. `3 0.50000000 0.46734350 1.00000000 0.44818700`. x2 = 1.0. \n`train/000000210520`: `3 0.50000000 0.50000000 1.00000000 1.00000000`. x2=1.0, y2=1.0. \n\nIf the definition of out_of_bounds is strictly > 1.0, then there are no violations. If it includes == 1.0, then there are many. Standard YOLO allows [0,1]. I will assume no out_of_bounds unless clearly > 1.0. \n\nLet's check for `degenerate_box`. \n`train/000000355325`: `3 0.50000000 0.46734350 1.00000000 0.44818700`. w=1.0, h=0.448. Not degenerate. \n`train/000000210520`: `3 0.50000000 0.50000000 1.00000000 1.00000000`. w=1.0, h=1.0. Not degenerate. \n\nLet's check for `tiny_box`. \n`train/000000384527` (val) has many class 10 boxes with very small widths/heights. \n`10 0.93739100 0.37492700 0.01168800 0.07643800`. w=0.011, h=0.076. This is very small. \n`10 0.95614100 0.27630200 0.01118800 0.08135400`. w=0.011. \n`10 0.94759400 0.37330200 0.01393800 0.08852000`. w=0.013. \n`10 0.94052300 0.27168700 0.03098400 0.09100000`. w=0.030. \n`10 0.96613300 0.27790600 0.01070400 0.08231200`. w=0.010. \n`10 0.97449200 0.28201000 0.01417200 0.07831200`. w=0.014. \n`10 0.97612500 0.38808350 0.04775000 0.09437500`. w=0.047. \n`10 0.95893000 0.47554200 0.03345400 0.08554200`. w=0.033. \n`10 0.93803050 0.47654200 0.01312500 0.08091600`. w=0.013. \n`10 0.98602300 0.28037500 0.02564000 0.08433400`. w=0.025. \n`10 0.96032000 0.27547900 0.01032800 0.08062600`. w=0.010. \n\nThese are extremely small boxes (width < 0.05). This is a `tiny_box` issue. \n\nAlso `train/000000094751` has many small class 0 boxes. \n`0 0.19142700 0.52187000 0.02776000 0.03330000`. w=0.027, h=0.033. \n`0 0.29602700 0.52192000 0.01877400 0.03076000`. w=0.018. \n`0 0.54426700 0.52104000 0.01744000 0.02728000`. w=0.017. \n`0 0.67013300 0.51189000 0.02021400 0.01686000`. w=0.020, h=0.016. \n`0 0.20888000 0.51954000 0.01658600 0.02900000`. w=0.016. \n`0 0.16049300 0.52364000 0.01938600 0.02852000`. w=0.019. \n`0 0.26981300 0.51933000 0.02416000 0.02638000`. w=0.024. \n`0 0.83736000 0.55592000 0.02368000 0.02396000`. w=0.023. \n`0 0.64473300 0.50925000 0.02509400 0.01798000`. w=0.025. \n`0 0.73616000 0.51604000 0.01648000 0.02512000`. w=0.016. \n`0 0.48021300 0.52250000 0.01120000 0.02772000`. w=0.011. \n\nThese are also tiny boxes. \n\nSo I will report `tiny_box` for these files. \n\nLet's check for `class_id_out_of_range`. \nnc=12 (from names list, despite yaml error). Max class id in labels is 11 (backpack). 11 < 12. So no class_id_out_of_range. \n\nLet's check for `malformed_label_row`. \nAll rows seem to have 5 fields. \n\nLet's check for `duplicate_annotation`. \nI don't see obvious duplicates in the sample. \n\nLet's check for `missing_label_file` or `orphan_label_file`. \nThe summary says 468 images and 468 label files in train, 132 images and 132 label files in val. So counts match. \n\nLet's check for `train_val_leakage`. \nI don't have image content, so I can't check this. \n\nLet's check for `near_duplicate_image`. \nI don't have image content, so I can't check this. \n\nLet's check for `corrupt_image`. \nI don't have image content, so I can't check this. \n\nLet's check for `class_swap`. \nI don't have enough context to determine this. \n\nLet's check for `empty_label_file`. \nI don't see any empty label files in the sample. \n\nSo the main findings are: \n1. `yaml_inconsistency` (critical) \n2. `extreme_class_imbalance` (critical) \n3. `tiny_box` (major) \n\nI will structure the JSON accordingly."
+    }
+  ],
+  "_files_shown": [
+    "train/000000577932",
+    "train/000000447342",
+    "train/000000172648",
+    "train/000000463527",
+    "val/000000018150",
+    "train/000000349480",
+    "val/000000572462",
+    "val/000000264535",
+    "train/000000355325",
+    "train/000000074256",
+    "train/000000482436",
+    "val/000000384527",
+    "train/000000210520",
+    "train/000000127270",
+    "train/000000094751",
+    "train/000000287874",
+    "train/000000186980",
+    "train/000000546626",
+    "train/000000500613",
+    "train/000000057672",
+    "val/000000289938",
+    "train/000000506707",
+    "train/000000030828",
+    "train/000000345356",
+    "train/000000530061",
+    "train/000000303713",
+    "train/000000350003",
+    "val/000000387098",
+    "val/000000171190",
+    "val/000000172595",
+    "train/000000563267",
+    "train/000000271116",
+    "val/000000569030",
+    "val/000000116208",
+    "train/000000461751",
+    "train/000000166166",
+    "train/000000193926",
+    "train/000000036936",
+    "train/000000300276",
+    "train/000000173004",
+    "val/000000278463",
+    "train/000000253742",
+    "train/000000336232",
+    "train/000000074058",
+    "train/000000156076",
+    "train/000000300039",
+    "train/000000448410",
+    "train/000000277020",
+    "train/000000491213",
+    "val/000000565853",
+    "train/000000511076",
+    "train/000000528399",
+    "train/000000085157"
+  ]
+}

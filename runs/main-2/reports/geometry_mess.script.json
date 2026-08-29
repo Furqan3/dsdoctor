@@ -1,0 +1,94 @@
+{
+  "findings": [
+    {
+      "type": "out_of_bounds",
+      "title": "5 box(es) fall outside the normalised [0,1] range",
+      "detail": "Coordinates outside [0,1] are clipped or rejected depending on the loader. Where they are clipped the box silently changes shape, so the model is trained against a target the annotator never drew.",
+      "detector": "geometry_scan",
+      "items": [
+        "train/000000135561",
+        "train/000000361238",
+        "train/000000437239",
+        "val/000000035279",
+        "val/000000199771"
+      ],
+      "evidence": [
+        "train/000000135561 line 1: xyxy=(0.1978,0.2293,1.1451,1.1666) -> '6 0.67143000 0.69795750 0.94732800 0.93737500'",
+        "train/000000361238 line 2: xyxy=(0.4581,-0.4077,1.4500,0.7236) -> '0 0.95403100 0.15792700 0.99193800 1.13131200'",
+        "train/000000437239 line 6: xyxy=(-0.4144,-0.1385,0.5821,1.3100) -> '0 0.08388300 0.58574050 0.99648400 1.44856500'",
+        "val/000000035279 line 4: xyxy=(0.2465,-0.3148,1.2723,0.9162) -> '5 0.75940650 0.30065900 1.02587500 1.23099400'",
+        "val/000000199771 line 2: xyxy=(-0.0498,0.4707,0.9208,1.4500) -> '4 0.43549200 0.96036500 0.97057800 0.97927000'"
+      ],
+      "severity": "critical",
+      "fix": {
+        "action": "clip_or_drop_boxes",
+        "targets": [
+          "train/000000135561",
+          "train/000000361238",
+          "train/000000437239",
+          "val/000000035279",
+          "val/000000199771"
+        ]
+      },
+      "verified": null,
+      "verifier_note": ""
+    },
+    {
+      "type": "degenerate_box",
+      "title": "3 box(es) have zero or negative width/height",
+      "detail": "A zero-area box produces a NaN in most IoU implementations, which propagates into the loss and ends the run.",
+      "detector": "geometry_scan",
+      "items": [
+        "train/000000033221",
+        "train/000000067616",
+        "val/000000340175"
+      ],
+      "evidence": [
+        "train/000000033221 line 14: w=0 h=0.297027 -> '0 0.67295000 0.61749250 0.00000000 0.29702700'",
+        "train/000000067616 line 17: w=0 h=0.110354 -> '1 0.16000800 0.86349000 0.00000000 0.11035400'",
+        "val/000000340175 line 2: w=0 h=0.223959 -> '1 0.93539050 0.71578650 0.00000000 0.22395900'"
+      ],
+      "severity": "critical",
+      "fix": {
+        "action": "drop_degenerate_boxes",
+        "targets": [
+          "train/000000033221",
+          "train/000000067616",
+          "val/000000340175"
+        ]
+      },
+      "verified": null,
+      "verifier_note": ""
+    },
+    {
+      "type": "tiny_box",
+      "title": "4 box(es) are too small to survive the dataloader",
+      "detail": "Boxes with a normalised side below 0.003 are dropped during letterboxing. They inflate the apparent annotation count while contributing nothing, which makes per-class coverage look better than it is.",
+      "detector": "geometry_scan",
+      "items": [
+        "train/000000137727",
+        "train/000000295713",
+        "train/000000435880",
+        "train/000000577932"
+      ],
+      "evidence": [
+        "train/000000137727 line 5: w=0.0005 h=0.0005 area=2.50e-07 -> '11 0.69755500 0.77789700 0.00050000 0.00050000'",
+        "train/000000295713 line 11: w=0.0005 h=0.0005 area=2.50e-07 -> '0 0.96149200 0.05699050 0.00050000 0.00050000'",
+        "train/000000435880 line 4: w=0.0005 h=0.0005 area=2.50e-07 -> '4 0.99473400 0.48838500 0.00050000 0.00050000'",
+        "train/000000577932 line 6: w=0.0005 h=0.0005 area=2.50e-07 -> '0 0.70024200 0.51871100 0.00050000 0.00050000'"
+      ],
+      "severity": "major",
+      "fix": {
+        "action": "drop_tiny_boxes",
+        "targets": [
+          "train/000000137727",
+          "train/000000295713",
+          "train/000000435880",
+          "train/000000577932"
+        ]
+      },
+      "verified": null,
+      "verifier_note": ""
+    }
+  ]
+}

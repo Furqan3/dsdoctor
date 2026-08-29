@@ -1,0 +1,46 @@
+{
+  "verdict": "blocked",
+  "headline": "Do not train yet: 4 val images are byte-identical to train images, so any validation metric from this split is untrustworthy. Two more defects (duplicated boxes, near-duplicate train images) must be cleaned in the same pass.",
+  "training_impact": "The run itself will start and converge \u2014 there are no corrupt images, no out-of-bounds or degenerate boxes, no malformed labels, and no class-id problems. But the 4 leaked val images mean the model has memorized part of its own test set, so the val number will be inflated by an unknown margin and cannot be used to compare checkpoints or decide readiness. The 3 duplicated boxes double-count in the loss and break the one-target-per-object assumption of NMS-free matchers, and the 4 near-duplicate train images over-weight their scenes. Fix all three, re-split, then train.",
+  "detectors_run": [
+    "structure_scan",
+    "image_integrity_scan",
+    "geometry_scan",
+    "normalisation_scan",
+    "class_scan",
+    "duplicate_scan"
+  ],
+  "suppressed": 0,
+  "reinstated": 0,
+  "swept_fallback": false,
+  "incomplete": "",
+  "decisions": [
+    {
+      "finding_id": "retyped:0",
+      "type": "train_val_leakage",
+      "action": "report",
+      "severity": "critical",
+      "source": "retyped",
+      "rationale": "4 val images are byte-identical (matching sha1) to 4 train images: val/214827540762 = train/000000476787, val/382780712741 = train/000000056127, val/438274936455 = train/000000080932, val/889941193761 = train/000000166166. The model trains on content it is later scored on, so every val metric is optimistic by an unknown margin and useless for go/no-go decisions. Fix: remove the 4 val images (or move the train copies out) and re-split before training \u2014 fixing this after training means retraining from scratch.",
+      "files": 8
+    },
+    {
+      "finding_id": "retyped:1",
+      "type": "duplicate_annotation",
+      "action": "report",
+      "severity": "major",
+      "source": "retyped",
+      "rationale": "3 label files each list the same box twice (e.g. train/000000231822 line 6 repeats line 4: '4 0.45267 0.191011 0.13306 0.36856'). Duplicated boxes double-count in the loss and break the one-target-per-object assumption used by NMS-free matchers, biasing training on those objects. Fix: delete the repeated line in each of the 3 files.",
+      "files": 3
+    },
+    {
+      "finding_id": "retyped:2",
+      "type": "near_duplicate_image",
+      "action": "report",
+      "severity": "major",
+      "source": "retyped",
+      "rationale": "2 near-identical pairs inside train: train/000000295420 ~ train/303522373741 (perceptual distance 0/64, effectively identical) and train/000000150638 ~ train/912024475486 (distance 1/64). Duplicates over-weight whatever scenes they contain and inflate the reported dataset size. Fix: drop one image from each pair (keep the one with the better label) during the same cleanup pass as the leak.",
+      "files": 4
+    }
+  ]
+}

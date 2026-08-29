@@ -1,0 +1,34 @@
+{
+  "findings": [
+    {
+      "type": "train_val_leakage",
+      "title": "3 image pair(s) leak between train and val",
+      "detail": "The validation split contains content the model trained on. Every metric computed against it is optimistic by an unknown margin, so it cannot be used to compare checkpoints or to decide the model is ready to ship. Re-split before doing anything else - fixing this after training means retraining.",
+      "detector": "duplicate_scan",
+      "items": [
+        "train/000000221754",
+        "train/000000277005",
+        "train/000000336232",
+        "val/218885329401",
+        "val/706346898744",
+        "val/916278631571"
+      ],
+      "evidence": [
+        "val/218885329401 is byte-identical to train/000000221754 (sha1 e0369a05082d)",
+        "val/706346898744 is byte-identical to train/000000336232 (sha1 844893998f27)",
+        "val/916278631571 is byte-identical to train/000000277005 (sha1 a0731d4de241)"
+      ],
+      "severity": "critical",
+      "fix": {
+        "action": "resplit_removing_leaks",
+        "targets": [
+          "val/218885329401",
+          "val/706346898744",
+          "val/916278631571"
+        ]
+      },
+      "verified": null,
+      "verifier_note": ""
+    }
+  ]
+}

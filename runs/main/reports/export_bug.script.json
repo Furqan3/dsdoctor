@@ -1,0 +1,99 @@
+{
+  "findings": [
+    {
+      "type": "denormalised_coords",
+      "title": "4 file(s) hold pixel coordinates instead of normalised fractions",
+      "detail": "The values are bounded by the image dimensions rather than by 1.0, so this is an export that skipped the divide-by-width/height step. Training on it produces boxes that collapse to the top-left corner.",
+      "detector": "normalisation_scan",
+      "items": [
+        "train/000000001000",
+        "train/000000067616",
+        "train/000000355325",
+        "train/000000511076"
+      ],
+      "evidence": [
+        "train/000000001000: 16/16 rows exceed 1.0; max x=572.335 y=344.265 vs image 640x480 -> '7 47.1850 287.4749 53.2896 121.5302'",
+        "train/000000067616: 25/25 rows exceed 1.0; max x=626.535 y=416.46 vs image 640x480 -> '2 464.2598 392.2102 145.9008 104.5598'",
+        "train/000000355325: 5/5 rows exceed 1.0; max x=478 y=479.64 vs image 478x640 -> '3 239.0000 299.0998 478.0000 286.8397'",
+        "train/000000511076: 5/5 rows exceed 1.0; max x=544.065 y=333.99 vs image 640x427 -> '2 200.6598 133.8051 41.3606 35.3300'"
+      ],
+      "severity": "critical",
+      "fix": {
+        "action": "normalise_coordinates",
+        "targets": [
+          "train/000000001000",
+          "train/000000067616",
+          "train/000000355325",
+          "train/000000511076"
+        ]
+      },
+      "verified": null,
+      "verifier_note": ""
+    },
+    {
+      "type": "out_of_bounds",
+      "title": "51 box(es) fall outside the normalised [0,1] range",
+      "detail": "Coordinates outside [0,1] are clipped or rejected depending on the loader. Where they are clipped the box silently changes shape, so the model is trained against a target the annotator never drew.",
+      "detector": "geometry_scan",
+      "items": [
+        "train/000000001000",
+        "train/000000067616",
+        "train/000000355325",
+        "train/000000511076"
+      ],
+      "evidence": [
+        "train/000000001000 line 1: xyxy=(20.5402,226.7098,73.8298,348.2400) -> '7 47.1850 287.4749 53.2896 121.5302'",
+        "train/000000001000 line 2: xyxy=(196.9107,224.3500,267.1705,341.9001) -> '7 232.0406 283.1251 70.2598 117.5501'",
+        "train/000000001000 line 3: xyxy=(115.1603,152.1302,198.3897,380.5401) -> '0 156.7750 266.3352 83.2294 228.4099'",
+        "train/000000001000 line 4: xyxy=(405.9296,120.4201,443.0598,165.9404) -> '0 424.4947 143.1802 37.1302 45.5203'",
+        "train/000000001000 line 5: xyxy=(265.3305,95.8603,354.2502,411.7401) -> '0 309.7904 253.8002 88.9197 315.8798'",
+        "train/000000001000 line 6: xyxy=(209.2301,174.6398,308.8601,423.7200) -> '0 259.0451 299.1799 99.6301 249.0802'",
+        "train/000000001000 line 7: xyxy=(504.6701,191.9501,639.9994,480.0000) -> '0 572.3347 335.9750 135.3293 288.0499'",
+        "train/000000001000 line 8: xyxy=(410.1997,208.5302,525.1001,480.0000) -> '0 467.6499 344.2651 114.9005 271.4698'",
+        "train/000000001000 line 9: xyxy=(380.8500,159.9101,469.2903,479.1600) -> '0 425.0701 319.5350 88.4403 319.2499'",
+        "train/000000001000 line 10: xyxy=(330.0698,154.2499,413.1200,468.1296) -> '0 371.5949 311.1898 83.0502 313.8797'",
+        "train/000000001000 line 11: xyxy=(410.7501,107.0299,498.8403,228.1901) -> '0 454.7952 167.6100 88.0902 121.1602'",
+        "train/000000001000 line 12: xyxy=(183.3997,121.3402,279.1705,394.0896) -> '0 231.2851 257.7149 95.7709 272.7494'"
+      ],
+      "severity": "critical",
+      "fix": {
+        "action": "clip_or_drop_boxes",
+        "targets": [
+          "train/000000001000",
+          "train/000000067616",
+          "train/000000355325",
+          "train/000000511076"
+        ]
+      },
+      "verified": null,
+      "verifier_note": ""
+    },
+    {
+      "type": "malformed_label_row",
+      "title": "3 label row(s) are not parseable",
+      "detail": "A YOLO row must be `class_id xc yc w h`. Rows that are not will raise during dataset scanning or be skipped silently depending on the loader version.",
+      "detector": "structure_scan",
+      "items": [
+        "train/000000242946",
+        "train/000000356531",
+        "val/000000172595"
+      ],
+      "evidence": [
+        "train/000000242946: line 17: expected 5 fields, found 6 -> '6 0.43035900 0.54203100 0.07406200 0.05743800 0.87'",
+        "train/000000356531: line 1: expected 5 fields, found 6 -> '5 0.67551600 0.52602100 0.02968800 0.15954200 0.87'",
+        "val/000000172595: line 5: expected 5 fields, found 6 -> '5 0.94861700 0.32158300 0.01486000 0.06366600 0.87'"
+      ],
+      "severity": "critical",
+      "fix": {
+        "action": "repair_or_drop_rows",
+        "targets": [
+          "train/000000242946",
+          "train/000000356531",
+          "val/000000172595"
+        ]
+      },
+      "verified": null,
+      "verifier_note": ""
+    }
+  ]
+}
