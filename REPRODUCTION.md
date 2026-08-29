@@ -24,9 +24,9 @@ Using `pyenv`, which is what this was developed with:
 
 ```bash
 pyenv install -s 3.11.12
-pyenv virtualenv 3.11.12 micro1
+pyenv virtualenv 3.11.12 dsdoctor
 cd dataset-doctor
-pyenv local micro1                 # the repo already contains .python-version
+pyenv local dsdoctor                 # the repo already contains .python-version
 python -m pip install -e .
 ```
 
