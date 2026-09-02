@@ -12,11 +12,16 @@ not a feature.
 ## Getting set up
 
 ```bash
-git clone https://github.com/Furqan3/dataset-doctor
-cd dataset-doctor
+git clone https://github.com/Furqan3/dsdoctor
+cd dsdoctor
 pip install -e ".[dev]"
-pytest                      # 217 tests, offline, about 55 seconds
+pytest                      # 218 tests, offline, about 70 seconds
 ```
+
+A fresh clone collects 207 of those: `data/` is generated rather than
+committed, so the eleven cases in `test_measured_configuration.py` that
+replay the published evaluation skip until you have run
+`eval/build_corpus.py`. Nothing else needs it.
 
 You do not need a GPU, a model endpoint, or the evaluation corpus to work on
 most of this. `dsdoctor scan`, `card`, `verify-card`, `recheck`, `diff`,

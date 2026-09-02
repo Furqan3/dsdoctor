@@ -7,6 +7,23 @@
   </picture>
 </h1>
 
+<p align="center">
+  <a href="https://github.com/Furqan3/dsdoctor/actions/workflows/tests.yml">
+    <img alt="tests"
+         src="https://github.com/Furqan3/dsdoctor/actions/workflows/tests.yml/badge.svg"></a>
+  <a href="https://github.com/Furqan3/dsdoctor/actions/workflows/tests.yml">
+    <img alt="218 tests, offline"
+         src="https://img.shields.io/badge/tests-218%20offline-1a1a19"></a>
+  <img alt="Python 3.10+"
+       src="https://img.shields.io/badge/python-3.10%2B-1a1a19">
+  <a href="LICENSE">
+    <img alt="Apache-2.0"
+         src="https://img.shields.io/badge/license-Apache--2.0-1a1a19"></a>
+  <a href="#the-three-design-decisions-that-matter">
+    <img alt="no language model generates a finding"
+         src="https://img.shields.io/badge/detectors-no%20LLM-b4232a"></a>
+</p>
+
 > Answers one question before you spend a GPU-day on it: **is this labelled
 > dataset actually safe to train on, and what has to be fixed first?**
 
@@ -1379,7 +1396,7 @@ src/dsdoctor/
   formats/          COCO JSON and Pascal VOC XML -> a YOLO view
   cli.py            scan / audit / apply / card / verify-card / recheck /
                     diff / resplit / merge / convert / detectors
-tests/              217 offline tests: detectors, injector round trip, scorer,
+tests/              218 offline tests: detectors, injector round trip, scorer,
                     agent-loop recovery, baseline parsing, safety gate,
                     check-group isolation, format invariance, fingerprinting,
                     LSH-vs-brute-force equivalence, CLI exit codes, polygon

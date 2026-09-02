@@ -36,9 +36,9 @@ vision = ["ultralytics>=8.2"]
 dev = ["pytest>=8.0"]
 
 [project.urls]
-Homepage = "https://github.com/Furqan3/dataset-doctor"
-Repository = "https://github.com/Furqan3/dataset-doctor"
-Issues = "https://github.com/Furqan3/dataset-doctor/issues"
+Homepage = "https://github.com/Furqan3/dsdoctor"
+Repository = "https://github.com/Furqan3/dsdoctor"
+Issues = "https://github.com/Furqan3/dsdoctor/issues"
 
 [project.scripts]
 dsdoctor = "dsdoctor.cli:main"

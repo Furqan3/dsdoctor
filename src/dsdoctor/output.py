@@ -123,7 +123,7 @@ def to_sarif(ds: Dataset, res: SweepResult, *, max_locations: int = 100) -> str:
             "tool": {"driver": {
                 "name": "dsdoctor",
                 "version": __version__,
-                "informationUri": "https://github.com/Furqan3/dataset-doctor",
+                "informationUri": "https://github.com/Furqan3/dsdoctor",
                 "rules": rules,
             }},
             "results": results,
