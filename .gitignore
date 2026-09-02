@@ -15,3 +15,6 @@ audit_out/
 
 # Evaluation output is kept for the submission, but scratch runs are not.
 runs/scratch*/
+
+# Scratch screenshots dropped in the repo root while working.
+image.png
