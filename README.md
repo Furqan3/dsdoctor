@@ -19,6 +19,11 @@
   <a href="#the-three-design-decisions-that-matter">
     <img alt="no language model generates a finding"
          src="https://img.shields.io/badge/detectors-no%20LLM-b4232a"></a>
+  <a href="https://github.com/Furqan3/dsdoctor/stargazers">
+    <img alt="GitHub stars"
+         src="https://img.shields.io/github/stars/Furqan3/dsdoctor?label=stars&color=1a1a19"></a>
+  <img alt="repository visitors"
+       src="https://hits.sh/github.com/Furqan3/dsdoctor.svg?label=visitors&color=1a1a19">
 </p>
 
 > Answers one question before you spend a GPU-day on it: **is this labelled
