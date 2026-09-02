@@ -34,7 +34,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 import yaml  # noqa: E402
 
 from dsdoctor.dataset import Dataset  # noqa: E402
-from dsdoctor.detectors import REGISTRY  # noqa: E402
+from dsdoctor.detectors import available            # noqa: E402
 from dsdoctor.detectors.duplicates import dhash, _hamming  # noqa: E402
 
 LABELS_URL = "https://github.com/ultralytics/assets/releases/download/v0.0.0/coco2017labels.zip"
@@ -266,8 +266,12 @@ def materialise(dst: Path, train, val, labels, names, img_dir) -> Dataset:
 
 
 def sweep(ds: Dataset):
+    # Core group only: "provably clean" is a claim about the checks the
+    # evaluation scores against, and an opt-in group must not be able to
+    # redefine it. `missing_license` in particular is true of this corpus and
+    # is not a defect the injector can create or the scorer can match.
     out = []
-    for det in REGISTRY.values():
+    for det in available():
         if det.heavy:
             continue
         out.extend(det.fn(ds))
@@ -361,7 +365,7 @@ def main() -> int:
         return 1
 
     s = ds.summary()
-    n_det = len([d for d in REGISTRY.values() if not d.heavy])
+    n_det = len([d for d in available() if not d.heavy])
     print("\n--- clean corpus ---")
     print(f"  0 findings across {n_det} detectors")
     print(f"  classes ({s['nc']}): {', '.join(s['names'])}")

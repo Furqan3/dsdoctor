@@ -62,23 +62,59 @@ split before anything else, the other six issues are cosmetic" has.
 
 ## What it does
 
-Three commands.
+Three commands are the core of it.
 
 ```bash
+pip install -e .
+
 # 1. deterministic checks only. no model, no network, a few seconds.
-python -m dsdoctor.cli scan  /path/to/dataset
+dsdoctor scan  /path/to/dataset
 
 # 2. full audit -> triage report + ordered fix plan + trajectory
-python -m dsdoctor.cli audit /path/to/dataset --out audit_out
+dsdoctor audit /path/to/dataset --out audit_out
 
 # 3. apply the plan. prompts first. backs up every file it touches.
-python -m dsdoctor.cli apply audit_out/fix_plan.json
+dsdoctor apply audit_out/fix_plan.json
 ```
 
 `audit_report.md` opens with the verdict and the one sentence that matters,
 then an ordered list of work, each item carrying the raw rows that prove it,
 then a section listing what the agent decided *not* to report and why — so a
 reviewer can overrule it.
+
+Only `audit` needs a model. Everything else is deterministic and offline, and
+if no endpoint is reachable `audit` says so and runs the deterministic checks
+instead of failing — they are where every finding comes from anyway.
+
+### The rest of the surface
+
+```bash
+# a health card that travels with the dataset, fingerprint included
+dsdoctor card        /path/to/dataset --checks all
+dsdoctor verify-card /path/to/dataset          # does this card describe THIS data?
+dsdoctor recheck     /path/to/dataset          # what changed since the card
+
+# a train/val split that cannot leak, verified after it is written
+dsdoctor resplit /path/to/dataset --out /path/to/split
+
+# COCO JSON and Pascal VOC XML, read directly
+dsdoctor convert /path/to/coco_dataset --out /path/to/yolo
+
+# compare two deliveries, or a dataset against its own repaired copy
+dsdoctor diff /path/to/v1 /path/to/v2
+
+# merge collections by class name, refusing to guess at taxonomy conflicts
+dsdoctor merge /path/to/a /path/to/b --out /path/to/merged
+
+# how much of this annotation effort can the model actually use?
+dsdoctor scan /path/to/dataset --checks training --imgsz 640
+
+# for CI: exit codes and SARIF, so findings land on the pull request
+dsdoctor scan /path/to/dataset --format sarif --fail-on critical
+dsdoctor scan /path/to/dataset --html report.html   # findings drawn on the pixels
+
+dsdoctor detectors                              # every check, and its group
+```
 
 ## How it works
 
@@ -173,6 +209,38 @@ otherwise.
 | `image_integrity_scan` | truncated / undecodable images | medium |
 | `duplicate_scan` | train/val leakage, near-duplicate images (perceptual hash) | medium |
 | `model_disagreement_scan` | systematic class swaps | **retired — see iteration 4** |
+
+Those seven are the `core` group: exactly the set every number in this README
+was measured with. Later checks are opt-in, via `--checks`, and stay that way
+until they have been through the same twelve cases. A test enforces it
+(`test_default_detector_set_is_unchanged`), because the way a results table
+quietly stops being true is that someone adds a detector.
+
+| group | detector | defects | cost |
+|---|---|---|---|
+| `split` | `split_scan` | class present in train but absent from val, unusable split ratio | fast |
+| `metadata` | `exif_orientation_scan` | EXIF orientation tags, where stored pixels differ from what the annotator saw | medium |
+| `privacy` | `privacy_scan` | EXIF GPS coordinates, absent licence/attribution | medium |
+| `privacy` | `representation_scan` | a class concentrated in one capture slice | medium |
+| `training` | `training_fit_scan` | objects below the network's finest stride at your `--imgsz`, images over `max_det` | fast |
+| `annotations` | `provenance_scan` | one box repeated verbatim across many images, whole-frame placeholder boxes | fast |
+
+Two more detectors, `polygon_scan` and `keypoint_scan`, are in `core` despite
+arriving later. They return immediately unless the dataset's task is `segment`
+or `pose`, so on the detection-only evaluation corpus they are structurally
+incapable of producing a finding — and that is demonstrated by a test rather
+than asserted.
+
+The `privacy` group answers a different question from everything else here —
+not *will this train*, but *may I lawfully train on this, and publish it*.
+Those findings are categorised as `governance`, kept out of the trainability
+verdict, and never fail a CI gate on their own. Merging the two makes both
+easier to ignore.
+
+Measured on the same provably clean 600-image corpus the rest of the
+evaluation uses, the four new detectors produce **zero false positives**. The
+one finding they do return on it — `missing_license` — is true: that corpus
+ships no licence file.
 
 
 ## Results
@@ -820,19 +888,364 @@ The corollary I still believe, now stated so that it is falsifiable: judge a
 fallible component by its contribution *net of the judgement it consumes*, and
 verify that the judgement layer functions before you credit it with anything.
 
-## What I would build next
+## What was built after the evaluation, and what is still open
 
-- **Detect partial class swaps properly.** The right instrument is
-  cross-validated confident learning — train on the dataset, look at
-  out-of-fold disagreement — not a general-purpose detector's opinion. That is
-  a GPU-hour, not a 30-second scan, so it belongs behind an explicit opt-in.
-- **Stratify the leakage check.** All-pairs perceptual hashing is 179,700
-  comparisons at 600 images and roughly 50 million at 10,000. An LSH bucketing
-  step keeps it near-linear.
-- **Let the agent look at pixels.** Every judgement it makes today is about
-  label text and detector output. For `empty_label_file` in particular —
-  deliberate background image, or a dropped annotation? — opening the image is
-  what a person would do, and the model could.
+Three of the items on the original "what I would build next" list are done.
+They sit outside the measured configuration on purpose — the results table
+describes the `core` detector set, and none of this changes it.
+
+**The leakage check is near-linear now, and provably identical.** All-pairs
+perceptual hashing was 179,700 comparisons at 600 images and roughly 50
+million at 10,000, which is the size where the check stops being run at all.
+Candidates now come from banded LSH. The interesting part is that the banding
+is *exact* rather than approximate: two hashes within Hamming distance `d`
+differ in at most `d` bits and so can disturb at most `d` of the bands, and
+with more bands than the threshold at least one band must survive untouched,
+so no pair within the threshold can fail to collide. The pair set is identical
+to brute force — asserted over randomised trials in the test suite, and
+verified to produce byte-identical findings *and* evidence strings on all
+twelve evaluation cases. Hashing is threaded and cached on
+`(path, size, mtime)`, in a cache directory outside the dataset, because
+`scan` and `audit` are documented read-only and a cache file written into the
+directory under audit would break both that promise and the card fingerprint.
+
+**Findings can be looked at.** `--html` renders the affected images with their
+boxes drawn, inlined as data URIs in one self-contained file. This is the
+cheap half of "let the agent look at pixels": it does not help the model, but
+it does let a person settle `empty_label_file` — deliberate background image
+or dropped annotation — in about two seconds, which was the actual question.
+
+**Leakage has an automatic fix.** `dsdoctor resplit` builds the near-duplicate
+graph over the whole dataset and assigns whole connected components to one
+side or the other, so no chain of near-duplication can span the split. This is
+the part people get wrong: deleting the val copy of a leaked image leaves its
+near-duplicates behind, and re-splitting the survivors at random re-creates
+the leak from a different pair. Within that constraint the assignment is
+greedy on per-class val coverage, since a leak-free split that leaves four
+classes unvalidated has swapped one measurement failure for another. It writes
+a new directory of symlinks, never touching the source, and re-runs the
+leakage detector on its own output rather than asserting the construction is
+correct.
+
+Still open:
+
+- **Detect partial class swaps properly.** Unchanged from before: the right
+  instrument is cross-validated confident learning — train on the dataset,
+  look at out-of-fold disagreement — not a general-purpose detector's opinion.
+  That is a GPU-hour, not a 30-second scan, so it belongs behind an explicit
+  opt-in.
+- **Put the new check groups through the evaluation.** They are measured for
+  false positives on the clean corpus and unit-tested for true positives on
+  constructed defects, which is not the same as twelve cases with ground truth
+  and a baseline. Until that exists they stay opt-in.
+- **Let the *agent* look at pixels**, as opposed to the reader. Still the
+  right idea and still unbuilt.
+
+## Beyond the training run
+
+The checks above all answer "will this train". Two additions answer questions
+that no amount of mAP ever raises, and that tend to get asked for the first
+time by a lawyer, after the model has shipped.
+
+**A dataset health card.** Model cards exist; datasheets for datasets exist as
+a paper and almost nowhere as tooling. `dsdoctor card` writes `health.json`
+and `DATASET_CARD.md` into the dataset directory, carrying the composition,
+the findings, the verdict, which checks were run — and a content fingerprint,
+a SHA-256 over every file's path and contents.
+
+The fingerprint is what makes the card more than a claim. A vendor ships it
+with the delivery; the receiver runs `dsdoctor verify-card` and learns whether
+the card describes the data in front of them or a different version of it,
+without trusting anyone's changelog. The digest covers paths as well as
+contents, so a dataset whose splits were reshuffled reads as a different
+dataset — the case a naive hash-of-hashes misses. Writing the card does not
+change the fingerprint of the dataset it describes, which is why it can live
+inside it.
+
+The card's verdict is a fixed severity rule, not the agent's judgement, and it
+says so on its face. A card has to be reproducible by anyone, offline,
+byte-for-byte. `dsdoctor audit` remains the path that adds triage.
+
+**Governance and privacy checks.** EXIF GPS coordinates record where a
+photograph was taken to within a few metres, and they travel with the dataset
+into every copy and every public release long after anyone remembers they are
+there. Training never reads EXIF, so stripping it costs nothing in model
+quality — and `dsdoctor apply` does it by rewriting the JPEG segment structure
+rather than re-encoding, so the compressed scan data comes out bit-identical.
+The other check is simply whether any statement of licence or provenance
+accompanies the images at all. For an inherited dataset the answer is usually
+no, and "we found no restriction" is not a finding of permission.
+
+## Closing the loop
+
+`apply` used to be the end of the line: it rewrote label files and nothing
+ever re-read them. `dsdoctor recheck` diffs the current state against a health
+card and reports what was resolved, what remains, and what was introduced —
+exiting non-zero on the last of those. On the `geometry_mess` case the full
+loop reads:
+
+```
+$ dsdoctor card    ./ds          # verdict: blocked
+$ dsdoctor apply   ./plan.json   # 3 steps, 12 files, originals backed up
+$ dsdoctor recheck ./ds
+  card written 2026-09-01T11:41:32+00:00, verdict blocked
+  now                                     verdict usable_with_caveats
+
+  resolved:   12
+  remaining:  0
+  introduced: 0
+```
+
+That last line is the one that matters. It is also the only thing that would
+catch a bug in `apply` itself.
+
+## Datasets that did not arrive in YOLO format
+
+An inherited dataset is at least as likely to be COCO JSON or Pascal VOC XML
+as it is to be YOLO text files, and a checker that reads one layout does
+nothing for the others. `dsdoctor` detects the layout and reads it through a
+converted view — label files and a `data.yaml` written to a cache directory,
+images symlinked rather than copied — so every detector, the agent, the
+scorer and the fix plan work unchanged.
+
+**The conversion is faithful, not corrective**, and this is the part that was
+easy to get wrong. A converter written for convenience clamps coordinates to
+the image, drops zero-area boxes and skips annotations whose category was
+never declared — and every one of those is a defect this tool exists to
+report. So it normalises coordinates and nothing else. An undeclared COCO
+category becomes a class id past the end of the class list, which is exactly
+how `class_scan` detects the same defect natively.
+
+The test is invariance: export a case to COCO and to VOC, read it back, and
+require identical findings *and* identical affected files.
+
+Getting there took two bugs, both found by that test rather than by reading
+the code, and both worth recording because they are the same shape.
+
+1. A box whose right edge sits exactly on the image edge — `xmax == width`,
+   the ordinary way for a pixel-corner format to express it — came back a few
+   float ULPs above 1.0, over the geometry detector's 1e-9 tolerance. **124
+   fabricated CRITICAL findings on one 600-image case.** The fix is to snap
+   overhang below half a pixel, which is not a tolerance chosen to make a
+   number look good: a format whose coordinates *are* pixel corners cannot
+   express "outside the image by 0.4 pixels", so anything under that is
+   quantisation rather than a claim. The five real out-of-bounds boxes in that
+   case overhang by 265 to 288 pixels and pass through untouched.
+
+2. With the geometry then correct, the same finding came back — because a YOLO
+   row stores centre and side while every check reconstructs corners as
+   `yc + h/2`. Rounding both to the conventional 8 decimal places leaves that
+   reconstruction off by up to 7.5e-9, again over the 1e-9 tolerance. Writing
+   10 decimals puts the worst case at 7.5e-11 and costs two characters per
+   number.
+
+Both are instances of one class: **a converter that manufactures defects is a
+worse failure than one that misses them**, because the whole premise of this
+tool is that a finding corresponds to something real on disk. Neither would
+have been caught by a test that only asked whether conversion ran.
+
+## Beyond detection boxes
+
+`Box(cls, xc, yc, w, h)` was the whole data model, which meant three of the
+four task types Ultralytics ships were unreadable — and worse than unreadable:
+a segmentation label file is `cls x1 y1 x2 y2 …`, so every row of one was
+reported as `malformed_label_row`.
+
+The parser now resolves a **task** — from `data.yaml`, or inferred from the
+label rows — and a polygon's derived bounding box is stored in the same `Box`.
+That is the design decision worth stating: every geometry, class, duplicate
+and leakage check written for detection applies unchanged to a segmentation
+dataset, and the polygon checks are additive rather than a parallel
+implementation of the same twelve tests.
+
+Inference is by strong majority, and the reason is a defect this evaluation
+injects on purpose. A detection row with a stray trailing confidence column
+has six fields; a polygon needs an odd count of at least seven. A handful of
+polygon-width rows in a detection dataset is a *malformed detection dataset*,
+not a segmentation one, and reinterpreting it would hide exactly the defect
+`inj_malformed` exists to plant.
+
+| check | what it catches |
+|---|---|
+| `polygon_too_few_points` | fewer than three points: encloses nothing, rasterises to an empty mask |
+| `polygon_zero_area` | enough points to look real, all collinear |
+| `polygon_self_intersecting` | crosses itself, so the interior depends on the rasteriser's fill rule |
+| `keypoint_visibility_invalid` | a visibility flag that is not 0, 1 or 2 — usually a confidence score from a prediction dump |
+| `keypoint_outside_box` | a visible keypoint outside the instance it belongs to |
+
+One ordering detail is load-bearing. The classic self-intersecting polygon —
+a symmetric bow tie — has a signed area of exactly zero, because its two lobes
+wind in opposite directions and cancel. Testing area first reports it as
+"zero area", which is true of the arithmetic and misleading about the defect.
+Crossing is tested first, so the most specific diagnosis wins.
+
+## How much of your annotation effort the model can actually use
+
+This is the check that changes a decision rather than fixing a file, and it
+needs one number the dataset does not carry: the resolution you intend to
+train at.
+
+A YOLO detection head predicts on feature maps at strides 8, 16 and 32. An
+object spanning fewer than a few pixels at your `imgsz` has no cell that can
+represent it. It is not a hard example; it is unlearnable at that resolution,
+and every instance is counted against recall as though the model failed.
+
+On this project's own clean COCO corpus:
+
+| `--imgsz` | annotations too small to detect |
+|---|---|
+| 416 | 655 (9.7%) |
+| 640 | 165 (2.4%) |
+| 1280 | 0 |
+
+That is the input to choosing between 640 and 1280, and it costs a scan rather
+than two training runs. The companion check is `over_max_detections`: an image
+with more ground-truth objects than the default `max_det=300` has a recall
+ceiling below 1.0 that has nothing to do with the weights.
+
+## Merging collections, which is where class corruption is born
+
+The README's opening names three ways a dataset arrives, and one is "a merge
+of three internal collections". Merging is where the class-mapping defects
+this tool detects downstream are actually *created*: two collections each
+label `0` as the thing they care most about, and concatenating their label
+files teaches the model that a forklift and a pedestrian are one object.
+Nothing looks wrong afterwards — ids are in range, files are matched — which
+is exactly why it is worth catching at the moment it happens.
+
+`dsdoctor merge` merges by **name**, never by id, and reports four
+disagreements:
+
+```
+  2 class id(s) mean different things in different sources:
+    id 0: forklift, person
+    -> resolved by rebuilding ids from names.
+
+  1 name(s) look like the same class spelled differently:
+    Cars, car
+    -> kept as SEPARATE classes. Merging them is a relabelling decision,
+       and this tool does not make it for you.
+
+  1 image(s) appear in more than one source:
+    identical: source 0 train/img0 ~ source 2 train/img0
+    -> after merging these are duplicates, and if the sources split them
+       differently they are train/val leakage.
+
+  6 filename(s) are used by more than one source; they will be prefixed.
+```
+
+The refusal is the point. `car` and `Cars` are almost certainly one class, and
+merging them silently would invent a relabelling nobody approved, while
+keeping them apart splits a class in two. Both are wrong to decide
+automatically, so the merge stops and says so unless `--force` is given.
+
+## Measuring the opt-in groups
+
+The new groups are scored the same way the core ones are — against injected
+ground truth, not against a claim. Five injectors were added and four cases,
+kept in a separate suite so the headline twelve keep describing what they
+described.
+
+```
+$ python eval/run_extended.py
+
+base rate on the provably clean corpus
+    missing_license               1 file(s)
+    undetectable_at_imgsz        96 file(s)
+
+case                        recall  spurious  base-rate
+camera_metadata                9/9         0          0
+unmeasurable_split             1/1         0          0
+too_small_to_learn             6/6         0         96
+annotation_template            8/8         0          0
+
+total: 24/24 injected defects found (100%), 0 spurious finding(s)
+```
+
+The base-rate column is the honest part, and the first version of this script
+did not have it. `undetectable_at_imgsz` measures a *property* rather than a
+*defect*: COCO genuinely contains hundreds of sub-stride objects before
+anything is injected, so scoring it naively gave a precision of 21% that
+described the corpus rather than the check. Findings that the provably clean
+corpus also produces are counted as neither hits nor misses, and reported in
+their own column — where, for that check, they are the interesting number.
+
+The same discipline caught a real false-positive problem during development.
+`whole_frame_box` originally reported every box covering the frame and fired
+thirteen times on the clean corpus, all of them COCO's `dining table`, which
+genuinely does fill the frame it is photographed in. True observations, and
+useless findings. It now reports the *pattern* — a share of the dataset large
+enough that no photographic subject explains it — and is silent on the clean
+corpus at 0.19%.
+
+## The verifier now fires on every test run
+
+The README's hot take is that the dangerous components are the ones that never
+run, and that the fix is to make them fire on purpose and watch what they do.
+That was done once, by hand.
+
+`tests/test_verifier_fires.py` registers an experimental detector that always
+fires, so suppression — the only path that reaches the verifier — happens on
+every run of the suite. Eight tests drive it offline with a scripted model, in
+milliseconds. One of them is the original bug:
+
+```python
+def test_a_silent_verifier_does_not_reinstate(...):
+    """An empty answer is not dissent."""
+    llm = VerifierLLM("", finish_reason="length")
+    res = _audit(llm, clean_root)
+    assert res.reinstated_total == 0, "silence was treated as dissent again"
+```
+
+Another pins the gate in front of it: an agent asking to suppress a finding
+from an *exact* detector is refused in code, which is why the verifier never
+fires in the shipped configuration and must keep being why.
+
+That is the difference between a lesson written down and a guarantee.
+
+## Six bugs in the new code, and what they had in common
+
+Everything above shipped with tests passing. A deliberate hunt afterwards
+found six defects, and they are recorded here because the pattern is the
+useful part: **every one produced output that looked correct.** None crashed,
+none failed a test, and four of them would have been read as working by anyone
+who ran the command and glanced at the result.
+
+| bug | what it did | why nothing caught it |
+|---|---|---|
+| card fingerprinted the wrong tree | `card` on a COCO delivery wrote into `~/.cache`, fingerprinted 1,201 generated files instead of the 602 received, and named a cache path as the thing it described | it printed a verdict, a digest and three file paths — a confident, complete, wrong answer |
+| `strip_exif_jpeg` dropped a byte | a `while…else` set the cursor past the end when the loop finished naturally, discarding the tail | the loop normally exits at the scan marker via `break`; only a malformed JPEG reaches the other path, and those are what this tool is pointed at |
+| unchecked polygons read as clean | the "too complex to verify" note was appended to the self-intersection finding, so with no crossings there was no finding to carry it | absence of a finding is indistinguishable from a pass, which is the exact thing the code comment above that constant forbids |
+| template count exceeded reality | per-signature image counts were summed, so an image with two repeated boxes counted twice — a title claiming 16 affected images in an 8-image dataset | the number was plausible, and no test compared it against the dataset's size |
+| `recheck` hashed everything | it built a fingerprint it never printed — 0.22s of a 2.6s command on 600 images | it was correct, just wasteful, and wall-clock time is not asserted anywhere |
+| the report outlined every box red | a finding about one box among twenty drew all twenty as implicated | the picture asserted something the finding text did not, and only a person comparing the two would notice |
+
+The fifth entry carries a seventh mistake, which was mine and not the code's.
+I first measured that waste at 2.7 seconds by timing the whole `recheck`
+command and attributing all of it to the hashing. It was 0.22s of a 2.6s run —
+the sweep was almost all of it. The removal is still right, and matters more at
+scale than 8% suggests, because the sweep's image hashing is cached on
+`(path, size, mtime)` across runs while a fingerprint cannot be cached by
+construction: re-reading every byte is the only thing that makes it mean
+anything. But the number I first wrote down described my stopwatch rather than
+the code, which is the same error as iteration 10.
+
+The first and the third are the ones worth keeping. The card bug broke the
+single property the feature exists for — a receiver being able to check that a
+card describes the data in front of them — and it broke it while looking like
+it worked. The polygon bug is the same failure as the verifier in iteration
+12, in new code, written by someone who had just finished writing a paragraph
+about it: **a guard that does not run is indistinguishable from a guard that
+works.** I wrote "an unchecked shape must not read as a clean one" in a comment
+directly above the code that let an unchecked shape read as a clean one.
+
+Findings now carry `locations` — the label rows a finding is actually about —
+so the visual report can outline the implicated annotation and draw the rest
+in grey. Where a check does not know which row it means, nothing is drawn in
+red, because claiming a precision the finding does not have is the same error
+pointing the other way.
+
+All six have regression tests in `tests/test_bug_regressions.py`.
 
 ## Safety
 
@@ -846,6 +1259,36 @@ The brief asks for consequential actions to be gated. They are.
   not looked at the images.
 - Six of fourteen fix actions are deliberately not automatable at all; they are
   described and handed to the engineer.
+
+Everything added since keeps the same line:
+
+- `card`, `verify-card`, `recheck`, `diff`, `resplit` and `convert` never write
+  to the dataset either. `resplit` writes a *new* directory of symlinks;
+  `convert` writes to a cache directory; the perceptual-hash cache lives
+  outside the dataset for the same reason. `tests/test_apply.py` asserts the
+  read-only property across every check group, including the optional ones —
+  an optional check is exactly where a stray write would go unnoticed.
+- `strip_exif_metadata` is automatable because it is lossless: it rewrites the
+  JPEG segment structure and leaves the compressed scan data bit-identical,
+  rather than re-encoding through an image library. Verified by comparing
+  pixels before and after.
+- `bake_exif_orientation` is deliberately **not** automatable, for the mirror
+  of that reason: rotating a JPEG to match its orientation tag means
+  re-encoding it, and silently degrading every image in a dataset to fix a
+  metadata flag is not a trade this tool gets to make on someone's behalf. It
+  is described, with the lossless tool to do it with, and handed over.
+- The CI gate fails on trainability findings only. A licensing question should
+  not turn a build red — that teaches people to weaken `--fail-on`, which
+  loses the trainability gate too.
+
+## Licence
+
+Apache-2.0. See [LICENSE](LICENSE), and [NOTICE](NOTICE) for the one thing
+worth reading before you `pip install`: the core package depends only on
+permissively licensed libraries, but the optional `vision` extra pulls in
+Ultralytics, which is AGPL-3.0. That extra exists solely for the retired
+`model_disagreement_scan`. Do not install it unless AGPL-3.0 is acceptable in
+your context.
 
 ## Data provenance
 
@@ -918,10 +1361,24 @@ src/dsdoctor/
   agent.py          the tool loop, the system prompt, the verifier
   baseline.py       the one-direct-prompt baseline
   report.py         audit_report.md + fix_plan.json
-  apply.py          human-gated fixes with backups
-  cli.py            scan / audit / apply
-tests/              66 offline tests: detectors, injector round trip, scorer,
-                    agent-loop recovery, baseline parsing, safety gate
+  htmlreport.py     self-contained visual report; boxes drawn on the pixels
+  apply.py          human-gated fixes with backups; lossless EXIF stripping
+  sweep.py          run the detectors; shared by every non-agent command
+  card.py           health card, content fingerprint, verification
+  output.py         JSON and SARIF, for pipelines
+  resplit.py        leak-free split by near-duplicate component
+  merge.py          merge by class name, reporting conflicts before they land
+  progress.py       terminal-only progress; never touches stdout
+  formats/          COCO JSON and Pascal VOC XML -> a YOLO view
+  cli.py            scan / audit / apply / card / verify-card / recheck /
+                    diff / resplit / merge / convert / detectors
+tests/              217 offline tests: detectors, injector round trip, scorer,
+                    agent-loop recovery, baseline parsing, safety gate,
+                    check-group isolation, format invariance, fingerprinting,
+                    LSH-vs-brute-force equivalence, CLI exit codes, polygon
+                    and keypoint geometry, merge conflict detection, and a
+                    forced-suppression suite that makes the verifier fire,
+                    and one regression test per bug found after shipping
 eval/
   build_corpus.py   builds a provably clean corpus, fails if any finding remains
   injector.py       injects known defects, emits ground truth
@@ -930,8 +1387,10 @@ eval/
   run_eval.py       runs all arms, writes scores + trajectories
   experiment_class_swap.py  reproduces the retired experiment in iteration 4
   summarise.py      regenerates the results tables in this README
+  run_extended.py   scores the opt-in check groups, with base-rate separation
   render_trajectory.py      turns a trajectory into readable Markdown
 runs/               evaluation output, including every agent trajectory
+.github/workflows/  a dataset check that gates a pull request
 ```
 
 See **[REPRODUCTION.md](REPRODUCTION.md)** to run all of it from a clean

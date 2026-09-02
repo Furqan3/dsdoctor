@@ -73,12 +73,12 @@ def test_class_remap_is_not_automatable():
 
 
 def test_audit_and_scan_do_not_write(clean_root):
-    from dsdoctor.detectors import REGISTRY
+    from dsdoctor.detectors import available, EXTRA_GROUPS
     before = {p: p.stat().st_mtime_ns for p in clean_root.rglob("*") if p.is_file()}
     ds = Dataset(clean_root)
-    for det in REGISTRY.values():
-        if det.experimental:
-            continue
+    # Every group, not just core: an optional check is exactly the place a
+    # stray write would go unnoticed.
+    for det in available(groups=list(EXTRA_GROUPS)):
         det.fn(ds)
     after = {p: p.stat().st_mtime_ns for p in clean_root.rglob("*") if p.is_file()}
     assert before == after, "a detector modified the dataset"

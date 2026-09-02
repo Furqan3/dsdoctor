@@ -31,7 +31,73 @@ AUTOMATABLE = {
     "repair_or_drop_rows",
     "delete_orphan_labels",
     "remove_corrupt_images",
+    "strip_exif_metadata",
 }
+
+# Actions that exist, are understood, and are still handed to a person.
+# `bake_exif_orientation` is here rather than above on purpose: rotating a JPEG
+# to match its orientation tag means re-encoding it, and silently degrading
+# every image in a dataset to fix a metadata flag is not a trade this tool
+# gets to make on someone's behalf. `resplit_removing_leaks` and
+# `restratify_split` are handled by `dsdoctor resplit`, which writes a new
+# directory instead of mutating the one being audited.
+DELEGATED = {
+    "bake_exif_orientation": "re-encodes images; do it with a lossless "
+                             "transform such as `exiftran -ai` or `jpegtran`",
+    "resplit_removing_leaks": "run `dsdoctor resplit <dataset> --out <dir>`",
+    "restratify_split": "run `dsdoctor resplit <dataset> --out <dir>`",
+}
+
+
+def strip_exif_jpeg(path: Path) -> bool:
+    """Remove EXIF from a JPEG without touching a single pixel.
+
+    Re-saving through an image library would re-encode the entropy-coded data
+    and lose quality on every run. That is unnecessary: EXIF lives in an APP1
+    segment in the JPEG header, and the segments can be walked and rewritten
+    at the byte level, leaving the compressed scan data bit-identical.
+
+    Returns True when something was removed.
+    """
+    data = path.read_bytes()
+    if not data.startswith(b"\xff\xd8"):
+        return False       # not a JPEG; caller reports it
+    out = bytearray(b"\xff\xd8")
+    i, removed = 2, False
+    while i < len(data) - 1:
+        if data[i] != 0xFF:
+            break          # not at a marker boundary; copy the remainder
+        marker = data[i + 1]
+        if marker in (0xD8, 0x01) or 0xD0 <= marker <= 0xD7:
+            out += data[i:i + 2]
+            i += 2
+            continue
+        if marker == 0xDA:  # start of scan: entropy data runs to the end
+            out += data[i:]
+            i = len(data)
+            break
+        if i + 4 > len(data):
+            break
+        length = int.from_bytes(data[i + 2:i + 4], "big")
+        seg = data[i:i + 2 + length]
+        # APP1 carrying Exif (which is where GPS lives) is the only thing cut.
+        if marker == 0xE1 and seg[4:10] in (b"Exif\x00\x00", b"Exif\x00\xff"):
+            removed = True
+        else:
+            out += seg
+        i += 2 + length
+    # No `else` on this loop. It used to set `i = len(data)` when the loop
+    # ended naturally, which silently discarded whatever had not been consumed
+    # - one trailing byte, for a file ending just past a segment boundary.
+    # Losing a byte inside a function whose whole contract is "lossless" is
+    # the worst kind of bug this module could have, and truncated JPEGs are
+    # exactly what this tool gets pointed at.
+    if i < len(data):
+        out += data[i:]
+    if not removed:
+        return False
+    path.write_bytes(bytes(out))
+    return True
 
 
 def summarise(plan: dict) -> str:
@@ -52,6 +118,12 @@ def summarise(plan: dict) -> str:
         L.append(f"        {step['why']}")
     L += ["", f"  {auto} step(s) can be applied automatically, "
               f"{manual} need you to decide."]
+    hints = [(s["action"], DELEGATED[s["action"]]) for s in plan.get("steps", [])
+             if s["action"] in DELEGATED]
+    if hints:
+        L.append("")
+        for action, how in dict(hints).items():
+            L.append(f"  {action}: {how}")
     return "\n".join(L)
 
 
@@ -96,6 +168,12 @@ def apply_plan(plan_path: str | Path, *, assume_yes: bool = False,
                     if sample.label_path and sample.label_path.exists():
                         _backup(sample.label_path, ds.root, backup)
                         sample.label_path.unlink()
+                continue
+            if step["action"] == "strip_exif_metadata":
+                if sample.image_path and sample.image_path.exists():
+                    _backup(sample.image_path, ds.root, backup)
+                    if strip_exif_jpeg(sample.image_path):
+                        changed.add(key)
                 continue
             if step["action"] == "delete_orphan_labels":
                 if sample.label_path and sample.label_path.exists():

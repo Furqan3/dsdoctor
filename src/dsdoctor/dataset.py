@@ -27,10 +27,41 @@ from PIL import Image, ImageFile, UnidentifiedImageError
 
 IMAGE_SUFFIXES = {".jpg", ".jpeg", ".png", ".bmp", ".webp", ".tif", ".tiff"}
 
+# Canonical split-name aliases. Datasets in the wild disagree about what the
+# folders are called and a check that only understands "train"/"val" quietly
+# does nothing on half of them.
+TRAIN_NAMES = {"train", "train2017", "training"}
+VAL_NAMES = {"val", "valid", "val2017", "validation", "test"}
+
+
+def split_role(split: str) -> str:
+    """"train", "val" or "other" for a split directory name."""
+    s = split.lower()
+    if s in TRAIN_NAMES:
+        return "train"
+    if s in VAL_NAMES:
+        return "val"
+    return "other"
+
+
+# The three label geometries this parser understands. A dataset is one of
+# them, and guessing per-row would be a mistake: a detection row with a stray
+# sixth column and a three-point polygon are not distinguishable in isolation,
+# and one of them is a defect this tool exists to report.
+DETECT, SEGMENT, POSE = "detect", "segment", "pose"
+TASKS = (DETECT, SEGMENT, POSE)
+
 
 @dataclass
 class Box:
-    """One annotation row, kept alongside the text it was parsed from."""
+    """One annotation row, kept alongside the text it was parsed from.
+
+    Segmentation and pose rows are also represented here, with `xc/yc/w/h`
+    derived from the polygon's bounds. That is deliberate: it means every
+    geometry, class and duplicate check written for detection applies
+    unchanged to a segmentation dataset, and the polygon-specific checks are
+    additive rather than a parallel implementation.
+    """
 
     cls: int
     xc: float
@@ -39,6 +70,8 @@ class Box:
     h: float
     line_no: int
     raw: str
+    polygon: tuple[tuple[float, float], ...] | None = None
+    keypoints: tuple[tuple[float, float, float], ...] | None = None
 
     @property
     def xyxy(self) -> tuple[float, float, float, float]:
@@ -48,6 +81,52 @@ class Box:
     @property
     def area(self) -> float:
         return self.w * self.h
+
+
+def polygon_area(points) -> float:
+    """Signed shoelace area. The sign carries the winding direction."""
+    n = len(points)
+    if n < 3:
+        return 0.0
+    total = 0.0
+    for i in range(n):
+        x1, y1 = points[i]
+        x2, y2 = points[(i + 1) % n]
+        total += x1 * y2 - x2 * y1
+    return total / 2.0
+
+
+def _segments_cross(a, b, c, d) -> bool:
+    """Do segments ab and cd properly cross (not merely touch at an endpoint)?"""
+    def orient(p, q, r):
+        v = (q[0] - p[0]) * (r[1] - p[1]) - (q[1] - p[1]) * (r[0] - p[0])
+        return 0 if abs(v) < 1e-12 else (1 if v > 0 else -1)
+
+    o1, o2 = orient(a, b, c), orient(a, b, d)
+    o3, o4 = orient(c, d, a), orient(c, d, b)
+    return o1 != o2 and o3 != o4 and o1 != 0 and o2 != 0 and o3 != 0 and o4 != 0
+
+
+def self_intersections(points) -> list[tuple[int, int]]:
+    """Pairs of non-adjacent edges that cross.
+
+    A self-intersecting polygon has no well-defined interior, so the mask
+    rasterised from it depends on the fill rule the training code happens to
+    use - which is exactly the kind of defect that trains a model on a target
+    nobody drew.
+    """
+    n = len(points)
+    if n < 4:
+        return []
+    edges = [(points[i], points[(i + 1) % n]) for i in range(n)]
+    out = []
+    for i in range(n):
+        for j in range(i + 2, n):
+            if i == 0 and j == n - 1:
+                continue          # adjacent through the wrap-around
+            if _segments_cross(*edges[i], *edges[j]):
+                out.append((i, j))
+    return out
 
 
 @dataclass
@@ -95,7 +174,7 @@ class Sample:
 class Dataset:
     """A loaded YOLO dataset. Cheap to construct; pixels are read on demand."""
 
-    def __init__(self, root: str | Path):
+    def __init__(self, root: str | Path, task: str | None = None):
         self.root = Path(root).resolve()
         if not self.root.is_dir():
             raise FileNotFoundError(f"dataset root does not exist: {self.root}")
@@ -104,8 +183,32 @@ class Dataset:
         self.yaml_error: str | None = None
         self.samples: list[Sample] = []
         self._by_key: dict[str, Sample] = {}
+        self.task: str = task or DETECT
+        self.task_source: str = "argument" if task else "default"
+        self.n_kpt: int = 0
+        self.kpt_dim: int = 3
         self._load_yaml()
+        if task is None:
+            self._resolve_task()
         self._load_samples()
+
+    def _resolve_task(self) -> None:
+        """data.yaml wins; otherwise infer from the label rows."""
+        if self.n_kpt:
+            self.task, self.task_source = POSE, "data.yaml kpt_shape"
+            return
+        declared = getattr(self, "_declared_task", None)
+        if declared in TASKS:
+            self.task, self.task_source = declared, "data.yaml task"
+            return
+        labels_root = self.root / "labels"
+        paths: list[Path] = []
+        if labels_root.is_dir():
+            for split_dir in sorted(p for p in labels_root.iterdir() if p.is_dir()):
+                paths += sorted(split_dir.glob("*.txt"))[:20]
+        inferred = infer_task(paths)
+        self.task = inferred
+        self.task_source = "inferred from label rows"
 
     # ---------------------------------------------------------------- config
 
@@ -131,6 +234,14 @@ class Dataset:
             self.names = list(names)
         else:
             self.yaml_error = "data.yaml has no usable 'names' entry"
+        self._declared_task = str(cfg.get("task") or "").strip().lower() or None
+        kpt = cfg.get("kpt_shape")
+        if isinstance(kpt, (list, tuple)) and len(kpt) >= 1:
+            try:
+                self.n_kpt = int(kpt[0])
+                self.kpt_dim = int(kpt[1]) if len(kpt) > 1 else 3
+            except (TypeError, ValueError):
+                self.n_kpt, self.kpt_dim = 0, 3
         declared = cfg.get("nc")
         if declared is not None and self.names and int(declared) != len(self.names):
             self.yaml_error = (
@@ -172,7 +283,9 @@ class Dataset:
                     image_path=images.get(stem),
                     label_path=labels.get(stem),
                 )
-                s.label = _parse_label(labels[stem]) if stem in labels else None
+                s.label = (_parse_label(labels[stem], self.task,
+                                        self.n_kpt, self.kpt_dim)
+                           if stem in labels else None)
                 self.samples.append(s)
                 self._by_key[s.key()] = s
 
@@ -247,6 +360,8 @@ class Dataset:
                         class_counts[b.cls] = class_counts.get(b.cls, 0) + 1
         return {
             "root": str(self.root),
+            "task": self.task,
+            "task_source": self.task_source,
             "nc": self.nc,
             "names": self.names,
             "splits": per_split,
@@ -257,30 +372,106 @@ class Dataset:
         }
 
 
-def _parse_label(path: Path) -> LabelFile:
+def looks_like_polygon(n_fields: int) -> bool:
+    """Could a row of this width be `cls x1 y1 x2 y2 x3 y3 ...`?
+
+    Needs at least three points, and an even number of coordinates. A
+    detection row with one stray trailing column has six fields, which is odd
+    after the class id and therefore never mistaken for a polygon - that
+    matters, because a trailing confidence column is a defect the evaluation
+    injects on purpose.
+    """
+    return n_fields >= 7 and (n_fields - 1) % 2 == 0
+
+
+def _parse_label(path: Path, task: str = DETECT, n_kpt: int = 0,
+                 kpt_dim: int = 3) -> LabelFile:
     lf = LabelFile(path=path)
     try:
         text = path.read_text(errors="replace")
     except OSError as exc:
         lf.parse_errors.append(ParseError(0, "", f"unreadable: {exc}"))
         return lf
+
+    expected = {DETECT: 5, POSE: 5 + n_kpt * kpt_dim}.get(task)
+
     for i, line in enumerate(text.splitlines(), start=1):
         raw = line.strip()
         if not raw:
             continue
         parts = raw.split()
-        if len(parts) != 5:
+
+        if task == SEGMENT:
+            if not looks_like_polygon(len(parts)):
+                lf.parse_errors.append(ParseError(
+                    i, raw, f"expected an odd count of at least 7 fields "
+                            f"(class plus >=3 xy pairs), found {len(parts)}"))
+                continue
+        elif expected is not None and len(parts) != expected:
             lf.parse_errors.append(
-                ParseError(i, raw, f"expected 5 fields, found {len(parts)}"))
+                ParseError(i, raw, f"expected {expected} fields, "
+                                   f"found {len(parts)}"))
             continue
+
         try:
             cls = int(float(parts[0]))
-            xc, yc, w, h = (float(v) for v in parts[1:])
+            values = [float(v) for v in parts[1:]]
         except ValueError:
             lf.parse_errors.append(ParseError(i, raw, "non-numeric field"))
             continue
-        lf.boxes.append(Box(cls=cls, xc=xc, yc=yc, w=w, h=h, line_no=i, raw=raw))
+
+        if task == SEGMENT:
+            pts = tuple(zip(values[0::2], values[1::2]))
+            xs = [x for x, _ in pts]
+            ys = [y for _, y in pts]
+            # The box is derived from the polygon's extent, so every existing
+            # detection check reads a segmentation dataset correctly.
+            x1, x2, y1, y2 = min(xs), max(xs), min(ys), max(ys)
+            lf.boxes.append(Box(cls=cls, xc=(x1 + x2) / 2, yc=(y1 + y2) / 2,
+                                w=x2 - x1, h=y2 - y1, line_no=i, raw=raw,
+                                polygon=pts))
+            continue
+
+        xc, yc, w, h = values[:4]
+        kpts = None
+        if task == POSE and n_kpt:
+            flat = values[4:]
+            if kpt_dim == 2:
+                kpts = tuple((flat[j], flat[j + 1], 2.0)
+                             for j in range(0, len(flat), 2))
+            else:
+                kpts = tuple((flat[j], flat[j + 1], flat[j + 2])
+                             for j in range(0, len(flat), 3))
+        lf.boxes.append(Box(cls=cls, xc=xc, yc=yc, w=w, h=h, line_no=i,
+                            raw=raw, keypoints=kpts))
     return lf
+
+
+def infer_task(label_paths: list[Path], limit: int = 40) -> str:
+    """Guess the label geometry from the files themselves.
+
+    Only a strong majority counts. A detection dataset containing a handful of
+    polygon-width rows is a *malformed* detection dataset, not a segmentation
+    one, and silently reinterpreting it would hide the defect.
+    """
+    polygon = plain = 0
+    for path in label_paths[:limit]:
+        try:
+            text = path.read_text(errors="replace")
+        except OSError:
+            continue
+        for line in text.splitlines():
+            parts = line.split()
+            if not parts:
+                continue
+            if looks_like_polygon(len(parts)):
+                polygon += 1
+            else:
+                plain += 1
+    total = polygon + plain
+    if total >= 5 and polygon / total >= 0.9:
+        return SEGMENT
+    return DETECT
 
 
 def file_sha1(path: Path, chunk: int = 1 << 20) -> str:

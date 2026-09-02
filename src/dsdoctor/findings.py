@@ -35,7 +35,60 @@ DEFECT_TYPES: dict[str, tuple[str, str]] = {
     "empty_label_file":     (MINOR,    "label file exists but contains no boxes"),
     "orphan_label_file":    (MINOR,    "label file has no corresponding image"),
     "yaml_inconsistency":   (MAJOR,    "data.yaml disagrees with the labels on disk"),
+
+    # --- polygon and keypoint geometry ----------------------------------
+    # These can only fire on a segmentation or pose dataset. On a detection
+    # dataset they are structurally inert, which is why they sit in `core`
+    # rather than an opt-in group: they cannot alter the published numbers,
+    # and `test_measured_configuration.py` demonstrates that rather than
+    # assuming it.
+    "polygon_too_few_points": (CRITICAL, "a segmentation polygon has fewer than three points, so it encloses nothing"),
+    "polygon_zero_area":    (CRITICAL, "a segmentation polygon has zero area; its points are collinear or coincident"),
+    "polygon_self_intersecting": (CRITICAL, "a segmentation polygon crosses itself, so its interior is undefined"),
+    "polygon_unverified":   (MINOR,    "a polygon has too many vertices to check for self-intersection"),
+    "keypoint_visibility_invalid": (MAJOR, "a keypoint visibility flag is not 0, 1 or 2"),
+    "keypoint_outside_box": (MINOR,   "a visible keypoint lies outside the box it belongs to"),
+
+    # --- trainability against a specific training configuration ---------
+    # These need a parameter the dataset does not carry (the input resolution
+    # you intend to train at), so they live in an opt-in group and take it
+    # from --imgsz.
+    "undetectable_at_imgsz": (MAJOR, "boxes are smaller than the model's finest feature stride at the chosen input size"),
+    "over_max_detections":  (MAJOR,  "images carry more objects than the default max_det, so evaluation silently truncates them"),
+
+    # --- annotation provenance smells -----------------------------------
+    "template_annotation":  (MAJOR,  "an identical box is repeated verbatim across many different images"),
+    "whole_frame_box":      (MINOR,  "a box spans essentially the entire image"),
+
+    # --- split integrity (group: "split") -------------------------------
+    "class_absent_from_val": (MAJOR,   "class has training instances but none in val, so its AP is undefined"),
+    "split_ratio_extreme":  (MAJOR,    "the train/val split is far outside a usable range"),
+
+    # --- capture metadata (group: "metadata") ---------------------------
+    "exif_orientation":     (CRITICAL, "image carries a non-trivial EXIF orientation tag, so labels and pixels may disagree"),
+
+    # --- governance and privacy (group: "privacy") ----------------------
+    # These do not affect whether the model trains. They affect whether the
+    # dataset may lawfully be trained on or published at all, which is a
+    # question no amount of mAP answers - hence a separate category.
+    "gps_metadata":         (MAJOR,    "images carry EXIF GPS coordinates that disclose where they were taken"),
+    "missing_license":      (MAJOR,    "no licence or attribution file accompanies the dataset"),
+    "representation_skew":  (MINOR,    "a class is concentrated in one capture slice, so the split may not measure generalisation"),
 }
+
+# Findings answer one of two different questions, and conflating them makes
+# the verdict incoherent: "will this train" and "may I train on this at all"
+# have different audiences and different remedies. The trainability verdict is
+# computed from TRAINABILITY findings only; governance findings are reported
+# alongside it and never silently change it.
+TRAINABILITY = "trainability"
+GOVERNANCE = "governance"
+
+GOVERNANCE_TYPES = {"gps_metadata", "missing_license", "representation_skew"}
+
+
+def category_for(defect_type: str) -> str:
+    return GOVERNANCE if defect_type in GOVERNANCE_TYPES else TRAINABILITY
 
 
 @dataclass
@@ -52,6 +105,12 @@ class Finding:
     fix: dict | None = None
     verified: bool | None = None
     verifier_note: str = ""
+    category: str = ""          # trainability | governance; derived from type
+    # "split/stem" -> the label rows this finding is actually about. Optional:
+    # many findings are about a file as a whole. Where it is known, the visual
+    # report can outline the offending box instead of every box in the image,
+    # which is the difference between evidence and decoration.
+    locations: dict[str, list[int]] | None = None
 
     def __post_init__(self) -> None:
         # A detector may override the severity, but when it does not, the
@@ -59,6 +118,8 @@ class Finding:
         # between runs or between the code paths that construct it.
         if not self.severity:
             self.severity = DEFECT_TYPES.get(self.type, (MAJOR, ""))[0]
+        if not self.category:
+            self.category = category_for(self.type)
 
     @property
     def n_items(self) -> int:

@@ -118,9 +118,54 @@ CASES: list[dict] = [
     },
 ]
 
+# Cases for the opt-in check groups. They are kept separate from CASES so that
+# the twelve-case headline stays exactly what it was measured on: adding these
+# to that list would silently change every published number's denominator.
+# Run them with `run_eval.py --suite extended`.
+EXTENDED_CASES = [
+    {
+        "name": "camera_metadata",
+        "seed": 201,
+        "groups": ["metadata", "privacy"],
+        "why": "A delivery straight off a phone: rotation held in EXIF rather "
+               "than in the pixels, and coordinates the photographer never "
+               "meant to hand over.",
+        "recipe": {"exif_orientation": 4, "gps_metadata": 5},
+    },
+    {
+        "name": "unmeasurable_split",
+        "seed": 202,
+        "groups": ["split"],
+        "why": "A split that trains fine and cannot be scored: a class present "
+               "in train and absent from val, so its AP is undefined and gets "
+               "averaged in as a zero.",
+        "recipe": {"class_absent_from_val": 1},
+    },
+    {
+        "name": "too_small_to_learn",
+        "seed": 203,
+        "groups": ["training"],
+        "why": "Annotations above the dataloader's drop threshold but below "
+               "the network's finest stride - work that was done and cannot "
+               "be used at the intended input size.",
+        "recipe": {"undetectable_at_imgsz": 6},
+    },
+    {
+        "name": "annotation_template",
+        "seed": 204,
+        "groups": ["annotations"],
+        "why": "A pre-annotation pass whose suggested box was accepted rather "
+               "than adjusted, leaving one identical box across many images.",
+        "recipe": {"template_annotation": 8},
+    },
+]
+
+ALL_CASES = CASES + EXTENDED_CASES
+
 
 def by_name(name: str) -> dict:
-    for c in CASES:
+    for c in ALL_CASES:
         if c["name"] == name:
             return c
-    raise KeyError(f"unknown case {name!r}; have {[c['name'] for c in CASES]}")
+    raise KeyError(f"unknown case {name!r}; "
+                   f"have {[c['name'] for c in ALL_CASES]}")

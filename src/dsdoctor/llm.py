@@ -22,7 +22,21 @@ from openai import OpenAI
 
 DEFAULT_BASE_URL = os.environ.get("DSDOCTOR_BASE_URL", "http://localhost:8000/v1")
 DEFAULT_MODEL = os.environ.get("DSDOCTOR_MODEL", "qwen3.8-27b")
-DEFAULT_API_KEY = os.environ.get("DSDOCTOR_API_KEY", "not-needed-for-local-vllm")
+DEFAULT_API_KEY = os.environ.get(
+    "DSDOCTOR_API_KEY",
+    os.environ.get("OPENAI_API_KEY", "not-needed-for-local-vllm"))
+
+
+class EndpointUnavailable(RuntimeError):
+    """The model endpoint could not be reached.
+
+    Raised as its own type so the CLI can turn it into an explanation and a
+    working alternative rather than a stack trace. The default endpoint is a
+    local vLLM server, which exists on the machine this was developed on and
+    nowhere else; anyone else's first run reaches a closed port, and a
+    ConnectionError is a poor way to learn that the deterministic half of the
+    tool needs no model at all.
+    """
 
 
 @dataclass
@@ -93,8 +107,26 @@ class LLM:
                  temperature: float = 0.0,
                  timeout: float = 600.0):
         self.client = OpenAI(base_url=base_url, api_key=api_key, timeout=timeout)
+        self.base_url = base_url
         self.model = model
         self.temperature = temperature
+
+    def preflight(self, timeout: float = 10.0) -> None:
+        """Fail early, and usefully, when the endpoint is not there.
+
+        A dataset audit spends its first seconds reading files, so without
+        this the failure surfaces some way into a run that looked like it had
+        started working.
+        """
+        from openai import OpenAI as _OpenAI
+        probe = _OpenAI(base_url=self.base_url,
+                        api_key=self.client.api_key, timeout=timeout)
+        try:
+            probe.models.list()
+        except Exception as exc:
+            raise EndpointUnavailable(
+                f"could not reach an OpenAI-compatible endpoint at "
+                f"{self.base_url} ({type(exc).__name__}: {exc})") from exc
 
     def chat(self, messages: list[dict], tools: list[dict] | None = None,
              tool_choice: str = "auto", max_tokens: int = 2048,

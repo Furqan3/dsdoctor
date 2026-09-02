@@ -1,0 +1,59 @@
+# Gate a dataset the way you would gate code.
+#
+# The deterministic half of dsdoctor needs no GPU, no model endpoint and no
+# network, and runs a 600-image dataset in a couple of seconds - so there is no
+# reason for a train/val leak to reach a training run rather than a pull
+# request. Findings are uploaded as SARIF, which GitHub renders as annotations
+# against the offending label files.
+
+name: dataset check
+
+on:
+  pull_request:
+    paths: ["data/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write        # required to upload SARIF
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dsdoctor
+        run: pip install -e .
+
+      - name: Scan the dataset
+        id: scan
+        # --fail-on critical blocks the merge on anything that would stop the
+        # run or invalidate the metrics. Governance findings never fail the
+        # gate; they are reported and read by a person.
+        run: |
+          dsdoctor scan data/my_dataset \
+            --checks all \
+            --format sarif > dsdoctor.sarif
+          dsdoctor scan data/my_dataset --checks all --fail-on critical
+
+      - name: Upload findings
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: dsdoctor.sarif
+          category: dsdoctor
+
+      - name: Attach the health card
+        if: always()
+        run: dsdoctor card data/my_dataset --checks all --out card_out
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dataset-health-card
+          path: card_out/

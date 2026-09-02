@@ -32,7 +32,7 @@ from injector import build_case, DATASET_LEVEL        # noqa: E402
 from score import score, aggregate                    # noqa: E402
 
 from dsdoctor.dataset import Dataset                  # noqa: E402
-from dsdoctor.detectors import REGISTRY               # noqa: E402
+from dsdoctor.detectors import REGISTRY, available    # noqa: E402
 from dsdoctor.llm import LLM, Trajectory              # noqa: E402
 from dsdoctor.agent import audit                      # noqa: E402
 from dsdoctor.baseline import (run_baseline, baseline_facts,  # noqa: E402
@@ -45,9 +45,10 @@ def arm_script(ds: Dataset, llm, experimental: bool):
     """Every detector, nothing filtered. No language model involved."""
     t0 = time.time()
     facts, findings = set(), []
-    for det in REGISTRY.values():
-        if det.experimental and not experimental:
-            continue
+    # `available()` rather than REGISTRY: it returns the core group only, so
+    # optional check groups added later cannot silently enter the published
+    # measurement. Widening what this arm runs must be a deliberate edit.
+    for det in available(include_experimental=experimental):
         if not det.covers:
             continue
         for f in det.fn(ds):

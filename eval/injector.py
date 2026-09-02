@@ -374,6 +374,102 @@ def inj_near_duplicate(ctx: Ctx, n: int) -> tuple[list[Fact], list[Fact]]:
 
 # ------------------------------------------------------------------ driver
 
+# --------------------------------------------- defects the later groups catch
+#
+# These exist so the opt-in check groups can be scored the same way the core
+# ones are, against ground truth rather than against a claim. Each mirrors how
+# the defect actually arrives in a delivered dataset.
+
+@injector("exif_orientation")
+def inj_exif_orientation(ctx: Ctx, n: int) -> tuple[list[Fact], list[Fact]]:
+    """A phone photo whose rotation lives in metadata rather than in pixels."""
+    facts = []
+    for key in ctx.pick(n):
+        path = ctx.image_path(key)
+        with Image.open(path) as im:
+            im = im.convert("RGB")
+            exif = Image.Exif()
+            exif[274] = ctx.rng.choice([3, 6, 8])
+            im.save(path, "JPEG", exif=exif, quality=95)
+        facts.append(("exif_orientation", key))
+    return facts, []
+
+
+@injector("gps_metadata")
+def inj_gps_metadata(ctx: Ctx, n: int) -> tuple[list[Fact], list[Fact]]:
+    """Coordinates left in the file by the camera that took it."""
+    facts = []
+    for key in ctx.pick(n):
+        path = ctx.image_path(key)
+        with Image.open(path) as im:
+            im = im.convert("RGB")
+            exif = Image.Exif()
+            gps = exif.get_ifd(0x8825)
+            gps.update({1: "N", 2: (float(ctx.rng.randrange(0, 90)), 30.0, 0.0),
+                        3: "W", 4: (float(ctx.rng.randrange(0, 180)), 7.0, 0.0)})
+            im.save(path, "JPEG", exif=exif, quality=95)
+        facts.append(("gps_metadata", key))
+    return facts, []
+
+
+@injector("class_absent_from_val")
+def inj_class_absent_from_val(ctx: Ctx, n: int) -> tuple[list[Fact], list[Fact]]:
+    """A class stripped out of val only - it trains, it cannot be scored.
+
+    Reported at dataset level because the defect is a property of the split,
+    not of any one file.
+    """
+    counts: dict[int, int] = {}
+    for key in ctx.keys(VAL):
+        for row in ctx.read(key):
+            counts[int(row[0])] = counts.get(int(row[0]), 0) + 1
+    # Prefer thin classes: removing a common one would also trip the imbalance
+    # detector and muddy which check found what.
+    candidates = [c for c, k in sorted(counts.items(), key=lambda kv: kv[1])
+                  if k > 0][:max(n, 1)]
+    facts = []
+    for cls in candidates[:n]:
+        for key in ctx.keys(VAL):
+            rows = ctx.read(key)
+            kept = [r for r in rows if int(r[0]) != cls]
+            if len(kept) != len(rows):
+                ctx.write(key, kept)
+        facts.append(("class_absent_from_val", DATASET_LEVEL))
+    return facts, []
+
+
+@injector("undetectable_at_imgsz")
+def inj_undetectable(ctx: Ctx, n: int) -> tuple[list[Fact], list[Fact]]:
+    """Annotations of objects far too small to survive the network's stride.
+
+    Deliberately larger than the `tiny_box` threshold, so the two checks are
+    telling the engineer different things: `tiny_box` is "the dataloader will
+    drop this", this is "the architecture cannot represent it at your imgsz".
+    """
+    facts = []
+    for key in ctx.pick(n):
+        rows = ctx.read(key)
+        i = ctx.rng.randrange(len(rows))
+        rows[i][3] = f"{0.008:.8f}"      # 5.1px at 640: above tiny, below stride
+        rows[i][4] = f"{0.008:.8f}"
+        ctx.write(key, rows)
+        facts.append(("undetectable_at_imgsz", key))
+    return facts, []
+
+
+@injector("template_annotation")
+def inj_template(ctx: Ctx, n: int) -> tuple[list[Fact], list[Fact]]:
+    """A pre-annotation pass whose suggested box was never adjusted."""
+    facts = []
+    keys = ctx.pick(max(n, 6))
+    for key in keys:
+        rows = ctx.read(key)
+        rows.append(["0", "0.50000000", "0.50000000", "0.20000000", "0.20000000"])
+        ctx.write(key, rows)
+        facts.append(("template_annotation", key))
+    return facts, []
+
+
 def build_case(base: Path, out: Path, recipe: dict[str, int], seed: int) -> dict:
     """Copy the clean corpus, apply a recipe, and return the ground truth."""
     if out.exists():

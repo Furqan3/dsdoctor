@@ -14,15 +14,15 @@ import pytest
 import yaml
 
 from dsdoctor.dataset import Dataset
-from dsdoctor.detectors import REGISTRY
+from dsdoctor.detectors import available
 from conftest import write_sample
 
 
 def sweep(root: Path):
     ds = Dataset(root)
     out = []
-    for det in REGISTRY.values():
-        if det.experimental or not det.covers:
+    for det in available():
+        if not det.covers:
             continue
         out.extend(det.fn(ds))
     return out

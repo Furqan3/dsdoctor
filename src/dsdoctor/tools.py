@@ -24,6 +24,7 @@ class ToolBox:
     ds: Dataset
     experimental: bool = False
     retype: bool = False
+    groups: list[str] = field(default_factory=list)
     findings: dict[str, Finding] = field(default_factory=dict)
     ran: list[str] = field(default_factory=list)
     report: dict | None = None
@@ -43,12 +44,17 @@ class ToolBox:
 
     def list_detectors(self) -> dict:
         out = []
-        for d in detectors.available(include_experimental=self.experimental):
+        for d in detectors.available(include_experimental=self.experimental,
+                                     groups=self.groups):
             out.append({
                 "name": d.name,
                 "description": d.description,
                 "detects": list(d.covers),
                 "cost": "slow" if d.heavy else ("medium" if d.reads_pixels else "fast"),
+                "group": d.group,
+                "answers": ("whether the dataset may lawfully be used"
+                            if d.group == "privacy" else
+                            "whether the dataset will train correctly"),
                 "reliability": ("experimental - known to produce false "
                                 "positives, treat output as a hypothesis"
                                 if d.experimental else
@@ -67,6 +73,9 @@ class ToolBox:
         if det.experimental and not self.experimental:
             return {"error": f"{name} is disabled in this run; it is an "
                              f"experimental detector and is off by default"}
+        if det.group != detectors.CORE and det.group not in self.groups:
+            return {"error": f"{name} is in the optional '{det.group}' check "
+                             f"group, which was not enabled for this run"}
         try:
             found = det.fn(self.ds)
         except Exception as exc:

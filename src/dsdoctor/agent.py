@@ -187,6 +187,7 @@ class AuditResult:
 
 def audit(ds: Dataset, llm: LLM, *, experimental: bool = False,
           verify: bool = True, retype: bool = False,
+          groups: list[str] | None = None,
           max_steps: int = MAX_STEPS) -> AuditResult:
     """Audit a dataset.
 
@@ -194,7 +195,8 @@ def audit(ds: Dataset, llm: LLM, *, experimental: bool = False,
     instead of curating detector ids. It exists to measure the shipped
     design, not to be used.
     """
-    tb = ToolBox(ds, experimental=experimental, retype=retype)
+    tb = ToolBox(ds, experimental=experimental, retype=retype,
+                 groups=list(groups or []))
     tools = schemas(retype)
     traj = Trajectory(agent="auditor", model=llm.model)
 
@@ -293,14 +295,14 @@ def audit(ds: Dataset, llm: LLM, *, experimental: bool = False,
         traj.note("agent submitted a report without running any detector; "
                   "falling back to a full sweep")
         incomplete = "agent reported without running any detector; swept anyway"
-        for det in _default_sweep(tb, experimental):
+        for det in _default_sweep(tb, experimental, groups):
             tb.run_detector(det)
 
     if tb.report is None:
         # Never return nothing: an audit that fails still has to hand over the
         # facts the detectors established.
         if not tb.ran:
-            for det in _default_sweep(tb, experimental):
+            for det in _default_sweep(tb, experimental, groups):
                 tb.run_detector(det)
         tb.report = {"verdict": "fix_before_training",
                      "headline": "Automated triage did not complete; showing "
@@ -336,10 +338,12 @@ def _emits_findings(name: str) -> bool:
     return bool(det and det.covers)
 
 
-def _default_sweep(tb: ToolBox, experimental: bool) -> list[str]:
+def _default_sweep(tb: ToolBox, experimental: bool,
+                   groups: list[str] | None = None) -> list[str]:
     from . import detectors
     return [d.name for d in
-            detectors.available(include_experimental=experimental) if d.covers]
+            detectors.available(include_experimental=experimental,
+                                groups=groups) if d.covers]
 
 
 def _resolve_retyped(tb: ToolBox, report: dict, traj: Trajectory) -> list[Decision]:

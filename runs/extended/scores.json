@@ -1,0 +1,77 @@
+{
+  "imgsz": 640,
+  "base_rate_on_clean_corpus": {
+    "missing_license": 1,
+    "undetectable_at_imgsz": 96
+  },
+  "cases": {
+    "camera_metadata": {
+      "groups": [
+        "metadata",
+        "privacy"
+      ],
+      "recipe": {
+        "exif_orientation": 4,
+        "gps_metadata": 5
+      },
+      "injected": 9,
+      "detected": 9,
+      "missed": 0,
+      "spurious": 0,
+      "explained_by_base_rate": 0,
+      "missed_examples": [],
+      "spurious_examples": []
+    },
+    "unmeasurable_split": {
+      "groups": [
+        "split"
+      ],
+      "recipe": {
+        "class_absent_from_val": 1
+      },
+      "injected": 1,
+      "detected": 1,
+      "missed": 0,
+      "spurious": 0,
+      "explained_by_base_rate": 0,
+      "missed_examples": [],
+      "spurious_examples": []
+    },
+    "too_small_to_learn": {
+      "groups": [
+        "training"
+      ],
+      "recipe": {
+        "undetectable_at_imgsz": 6
+      },
+      "injected": 6,
+      "detected": 6,
+      "missed": 0,
+      "spurious": 0,
+      "explained_by_base_rate": 96,
+      "missed_examples": [],
+      "spurious_examples": []
+    },
+    "annotation_template": {
+      "groups": [
+        "annotations"
+      ],
+      "recipe": {
+        "template_annotation": 8
+      },
+      "injected": 8,
+      "detected": 8,
+      "missed": 0,
+      "spurious": 0,
+      "explained_by_base_rate": 0,
+      "missed_examples": [],
+      "spurious_examples": []
+    }
+  },
+  "total": {
+    "detected": 24,
+    "missed": 0,
+    "spurious": 0,
+    "recall": 1.0
+  }
+}

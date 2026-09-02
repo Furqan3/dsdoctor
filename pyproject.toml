@@ -1,8 +1,25 @@
 [project]
 name = "dsdoctor"
-version = "0.5.0"
+version = "0.7.0"
 description = "Trainability audit for object-detection datasets, driven by an agent over deterministic detectors."
+readme = "README.md"
 requires-python = ">=3.10"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+keywords = ["computer-vision", "object-detection", "dataset-quality", "yolo",
+            "coco", "data-validation", "mlops", "annotation"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Image Recognition",
+    "Topic :: Software Development :: Quality Assurance",
+]
 dependencies = [
     "openai>=1.40",
     "numpy>=1.24",
@@ -14,15 +31,32 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# AGPL-3.0. Only needed for the retired model_disagreement_scan. See NOTICE.
 vision = ["ultralytics>=8.2"]
 dev = ["pytest>=8.0"]
+
+[project.urls]
+Homepage = "https://github.com/Furqan3/dataset-doctor"
+Repository = "https://github.com/Furqan3/dataset-doctor"
+Issues = "https://github.com/Furqan3/dataset-doctor/issues"
 
 [project.scripts]
 dsdoctor = "dsdoctor.cli:main"
 
+# Third-party packages can add their own deterministic checks by advertising an
+# entry point here. The value is a zero-argument callable that registers
+# detectors; see CONTRIBUTING.md, "Writing a detector plugin".
+#
+# [project.entry-points."dsdoctor.detectors"]
+# acme = "acme_checks:register_all"
+
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = ["ignore::DeprecationWarning:PIL.*"]

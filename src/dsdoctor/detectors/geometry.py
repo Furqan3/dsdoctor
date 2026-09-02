@@ -36,21 +36,26 @@ def geometry_scan(ds: Dataset) -> list[Finding]:
             x1, y1, x2, y2 = b.xyxy
 
             if b.w <= EPS or b.h <= EPS:
-                degen.append((s.key(), f"{where}: w={b.w:g} h={b.h:g} -> {b.raw!r}"))
+                degen.append((s.key(),
+                              f"{where}: w={b.w:g} h={b.h:g} -> {b.raw!r}",
+                              b.line_no))
             elif b.w < TINY_SIDE or b.h < TINY_SIDE or b.area < TINY_AREA:
                 tiny.append((s.key(),
-                             f"{where}: w={b.w:g} h={b.h:g} area={b.area:.2e} -> {b.raw!r}"))
+                             f"{where}: w={b.w:g} h={b.h:g} area={b.area:.2e} -> {b.raw!r}",
+                             b.line_no))
 
             if (x1 < -EPS or y1 < -EPS or x2 > 1 + EPS or y2 > 1 + EPS
                     or not (0 - EPS <= b.xc <= 1 + EPS)
                     or not (0 - EPS <= b.yc <= 1 + EPS)):
                 oob.append((s.key(),
-                            f"{where}: xyxy=({x1:.4f},{y1:.4f},{x2:.4f},{y2:.4f}) -> {b.raw!r}"))
+                            f"{where}: xyxy=({x1:.4f},{y1:.4f},{x2:.4f},{y2:.4f}) -> {b.raw!r}",
+                            b.line_no))
 
             sig = (b.cls, round(b.xc, 6), round(b.yc, 6), round(b.w, 6), round(b.h, 6))
             if sig in seen:
                 dupes.append((s.key(),
-                              f"{where} repeats line {seen[sig]}: {b.raw!r}"))
+                              f"{where} repeats line {seen[sig]}: {b.raw!r}",
+                              b.line_no))
             else:
                 seen[sig] = b.line_no
 
@@ -129,16 +134,28 @@ def normalisation_scan(ds: Dataset) -> list[Finding]:
         "normalise_coordinates")]
 
 
-def _group(dtype: str, severity: str, hits: list[tuple[str, str]],
+def _group(dtype: str, severity: str, hits: list[tuple],
            title_tail: str, detail: str, action: str) -> Finding:
+    """Collapse per-box hits into one finding.
+
+    Hits are `(key, message)` or `(key, message, line_no)`. Where the line
+    number is given it is carried through as `locations`, so the visual report
+    can outline the box the finding is about rather than every box in the
+    image - which looked like evidence and was not.
+    """
     by_file: dict[str, list[str]] = defaultdict(list)
-    for key, msg in hits:
+    lines: dict[str, list[int]] = defaultdict(list)
+    for hit in hits:
+        key, msg = hit[0], hit[1]
         by_file[key].append(msg)
+        if len(hit) > 2 and hit[2] is not None:
+            lines[key].append(hit[2])
     return Finding(
         type=dtype, severity=severity,
         title=f"{len(hits)} {title_tail}",
         detail=detail, detector="geometry_scan" if dtype != "denormalised_coords"
         else "normalisation_scan",
         items=sorted(by_file),
-        evidence=[m for _, m in hits[:12]],
+        evidence=[h[1] for h in hits[:12]],
+        locations={k: sorted(v) for k, v in lines.items()} or None,
         fix={"action": action, "targets": sorted(by_file)})

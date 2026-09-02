@@ -1,0 +1,32 @@
+dsdoctor
+Copyright 2026 dsdoctor contributors
+
+Licensed under the Apache License, Version 2.0 (the "License"); see LICENSE.
+
+--------------------------------------------------------------------------
+Third-party components and how they affect what you may ship
+--------------------------------------------------------------------------
+
+The core package - everything installed by `pip install dsdoctor` - depends
+only on permissively licensed libraries (numpy, Pillow, PyYAML, rich, jinja2,
+tqdm, and the OpenAI Python client). Nothing in the default install is
+copyleft, and `dsdoctor scan`, `card`, `verify-card`, `recheck`, `diff`,
+`resplit` and `convert` run entirely within that set.
+
+The OPTIONAL `vision` extra (`pip install dsdoctor[vision]`) pulls in
+Ultralytics, which is licensed under AGPL-3.0. AGPL obligations are
+significant for network-deployed software. That extra exists only for
+`model_disagreement_scan`, which is disabled by default and documented as
+measured net-harmful (see README, iteration 4). Do not install the `vision`
+extra unless you have decided that AGPL-3.0 is acceptable in your context.
+
+`yolov8n.pt`, checked into this repository for reproducing that one retired
+experiment, is an Ultralytics model file and is likewise AGPL-3.0.
+
+--------------------------------------------------------------------------
+Data
+--------------------------------------------------------------------------
+
+No dataset is redistributed by this repository. `eval/build_corpus.py`
+downloads COCO 2017 annotations (CC BY 4.0) and val2017 images (Flickr-sourced,
+under their original licences) at build time. See README, "Data provenance".

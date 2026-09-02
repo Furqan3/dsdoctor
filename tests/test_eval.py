@@ -18,14 +18,14 @@ from injector import build_case, INJECTORS, DATASET_LEVEL   # noqa: E402
 from score import score, expected_verdict                   # noqa: E402
 
 from dsdoctor.dataset import Dataset                        # noqa: E402
-from dsdoctor.detectors import REGISTRY                     # noqa: E402
+from dsdoctor.detectors import available                    # noqa: E402
 
 
 def detect_facts(root: Path) -> set:
     ds = Dataset(root)
     out = set()
-    for det in REGISTRY.values():
-        if det.experimental or not det.covers:
+    for det in available():
+        if not det.covers:
             continue
         for f in det.fn(ds):
             for k in (f.items or [DATASET_LEVEL]):
