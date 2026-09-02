@@ -1,4 +1,11 @@
-# dsdoctor — a trainability audit for object-detection datasets
+<h1 align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)"  srcset="docs/banner-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/banner-light.png">
+    <img src="docs/banner-light.png" width="100%"
+         alt="dsdoctor — a trainability audit for object-detection datasets">
+  </picture>
+</h1>
 
 > Answers one question before you spend a GPU-day on it: **is this labelled
 > dataset actually safe to train on, and what has to be fixed first?**
