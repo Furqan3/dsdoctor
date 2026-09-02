@@ -9,9 +9,6 @@
 
 <p align="center">
   <a href="https://github.com/Furqan3/dsdoctor/actions/workflows/tests.yml">
-    <img alt="tests"
-         src="https://github.com/Furqan3/dsdoctor/actions/workflows/tests.yml/badge.svg"></a>
-  <a href="https://github.com/Furqan3/dsdoctor/actions/workflows/tests.yml">
     <img alt="218 tests, offline"
          src="https://img.shields.io/badge/tests-218%20offline-1a1a19"></a>
   <img alt="Python 3.10+"
